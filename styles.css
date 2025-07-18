@@ -138,9 +138,174 @@ h1 {
     border: 2px solid #ddd;
 }
 
-.keyboard-active {
-    background-color: #4CAF50 !important;
-    transform: scale(1.1);
+
+.keyboard-mode-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.btn-sub-mode {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    background-color: #f0f0f0;
+    color: #666;
+    border: 1px solid #ccc;
+}
+
+.btn-sub-mode.active {
+    background-color: #8B4513;
+    color: white;
+    border-color: #8B4513;
+}
+
+.btn-sub-mode:hover {
+    background-color: #A0522D;
+    color: white;
+    border-color: #A0522D;
+}
+
+.keyboard-progress {
+    margin-bottom: 15px;
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    color: #8B4513;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #8B4513;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.focus-toggle {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.btn-focus {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #FF6B35;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-focus:hover {
+    background-color: #E55A2B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+}
+
+.focus-mode {
+    background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+}
+
+.focus-mode .header-section,
+.focus-mode .left-panel,
+.focus-mode .right-panel,
+.focus-mode .focus-toggle {
+    display: none;
+}
+
+.focus-mode .main-layout {
+    justify-content: center;
+}
+
+.focus-mode .center-panel {
+    max-width: none;
+    width: 100%;
+}
+
+.focus-mode .buddha-image {
+    width: 90vw;
+    height: 90vh;
+    max-width: none;
+    max-height: none;
+}
+
+.exit-focus {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    z-index: 1000;
+}
+
+.exit-focus:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.buddha-light {
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle,
+        transparent 0%,
+        transparent 30%,
+        rgba(255, 215, 0, 0.2) 40%,
+        rgba(255, 215, 0, 0.4) 60%,
+        rgba(255, 215, 0, 0.6) 80%,
+        rgba(255, 215, 0, 0.8) 100%);
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    animation: buddhaLightPulse 3s ease-out;
+    z-index: 5;
+}
+
+@keyframes buddhaLightPulse {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.3);
+    }
+    30% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    70% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(8);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(15);
+    }
+}
+
+.buddha-image-container {
+    position: relative;
+}
+
+.focus-mode .buddha-light {
+    width: 400px;
+    height: 400px;
 }
 
 .combo-container {
@@ -159,23 +324,52 @@ h1 {
     color: #FFD700;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
-    animation: comboFlyOut 2s ease-out forwards;
+    animation: comboFlyToLotus 3s ease-out forwards;
 }
 
-@keyframes comboFlyOut {
+@keyframes comboFlyToLotus {
     0% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(0.8);
+        transform: translate(-50%, 150px) scale(0.8);
     }
-    50% {
+    30% {
         opacity: 1;
-        transform: translate(-50%, -80px) scale(1.2);
+        transform: translate(-50%, 0px) scale(1);
+    }
+    60% {
+        opacity: 1;
+        transform: translate(-50%, -150px) scale(1.2);
+    }
+    70% {
+        opacity: 0;
+        transform: translate(-50%, -180px) scale(0.5);
     }
     100% {
         opacity: 0;
-        transform: translate(-50%, -120px) scale(1);
+        transform: translate(-50%, -180px) scale(0.5);
     }
 }
+
+.lotus-flower {
+    position: absolute;
+    font-size: 2rem;
+    opacity: 0.8;
+    transform: translate(-50%, -180px) scale(1);
+    z-index: 15;
+    transition: all 0.5s ease-out;
+}
+
+.lotus-counter {
+    position: absolute;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    opacity: 0.9;
+    z-index: 16;
+    transition: all 0.3s ease-out;
+}
+
 
 .status-indicator {
     text-align: center;
@@ -275,37 +469,37 @@ h1 {
     h1 {
         font-size: 2rem;
     }
-    
+
     .main-layout {
         flex-direction: column;
         align-items: center;
         gap: 20px;
     }
-    
+
     .left-panel, .right-panel {
         max-width: 100%;
         width: 100%;
         text-align: center;
     }
-    
+
     .controls {
         flex-direction: row;
         justify-content: center;
         flex-wrap: wrap;
     }
-    
+
     .btn {
         padding: 10px 20px;
         font-size: 1rem;
     }
-    
+
     .buddha-image {
         width: 80vw;
         height: 60vh;
         max-width: 400px;
         max-height: 400px;
     }
-    
+
     .combo-effect {
         font-size: 1.5rem;
     }

@@ -2,7 +2,11 @@ class BuddhistChantCounter {
     constructor() {
         this.recognition = null;
         this.isListening = false;
-        this.currentMode = 'speech'; // 'speech' 或 'keyboard'
+        this.currentMode = 'keyboard'; // 'speech' 或 'keyboard'
+        this.keyboardMode = 'char'; // 'char' 或 'chant'
+        this.chantProgress = 0; // 佛号进度 (0-4)
+        this.focusMode = false; // 专注模式
+        this.autoFocusThreshold = 10; // 自动专注阈值
         this.counts = {
             amitabha: 0
         };
@@ -19,12 +23,16 @@ class BuddhistChantCounter {
         this.lastProcessedText = '';
         this.keyboardCooldown = 200; // 键盘模式冷却时间（毫秒）
         this.lastKeyTime = 0;
+        this.lotusFlower = null; // 莲花元素
+        this.lotusScale = 1; // 莲花当前缩放比例
+        this.lotusCounter = null; // 莲花计数器
         
         this.initializeElements();
         this.loadCounts();
         this.initializeSpeechRecognition();
         this.attachEventListeners();
         this.updateDisplay();
+        this.initializeDefaultMode();
     }
     
     initializeElements() {
@@ -41,7 +49,17 @@ class BuddhistChantCounter {
             speechModeBtn: document.getElementById('speechModeBtn'),
             keyboardModeBtn: document.getElementById('keyboardModeBtn'),
             speechControls: document.getElementById('speechControls'),
-            keyboardControls: document.getElementById('keyboardControls')
+            keyboardControls: document.getElementById('keyboardControls'),
+            charModeBtn: document.getElementById('charModeBtn'),
+            chantModeBtn: document.getElementById('chantModeBtn'),
+            keyboardHint: document.getElementById('keyboardHint'),
+            keyboardProgress: document.getElementById('keyboardProgress'),
+            progressText: document.getElementById('progressText'),
+            progressFill: document.getElementById('progressFill'),
+            focusBtn: document.getElementById('focusBtn'),
+            headerSection: document.getElementById('headerSection'),
+            leftPanel: document.getElementById('leftPanel'),
+            rightPanel: document.getElementById('rightPanel')
         };
     }
     
@@ -159,9 +177,13 @@ class BuddhistChantCounter {
                 this.elements.recognitionInfo.textContent = `识别到佛号 +1`;
                 this.animateCount(this.elements.amitabhaCount);
                 this.showComboEffect();
+                this.showBuddhaLight();
                 
                 this.saveCounts();
                 this.updateDisplay();
+                
+                // 检查是否需要自动进入专注模式
+                this.checkAutoFocus();
             }
         }
         
@@ -192,10 +214,14 @@ class BuddhistChantCounter {
             this.elements.recognitionInfo.textContent = `识别到佛号 +1`;
             this.animateCount(this.elements.amitabhaCount);
             this.showComboEffect();
+            this.showBuddhaLight();
             
             this.processedPhrases.add(text);
             this.saveCounts();
             this.updateDisplay();
+            
+            // 检查是否需要自动进入专注模式
+            this.checkAutoFocus();
         }
     }
     
@@ -269,10 +295,8 @@ class BuddhistChantCounter {
     }
     
     animateCount(element) {
-        element.style.transform = 'scale(1.2)';
         element.style.color = '#4CAF50';
         setTimeout(() => {
-            element.style.transform = 'scale(1)';
             element.style.color = '#2196F3';
         }, 300);
     }
@@ -280,7 +304,7 @@ class BuddhistChantCounter {
     showComboEffect() {
         const comboElement = document.createElement('div');
         comboElement.className = 'combo-effect';
-        comboElement.textContent = `阿弥陀佛 × ${this.counts.amitabha}`;
+        comboElement.textContent = `阿弥陀佛`;
         
         // 随机位置偏移，让特效更自然
         const randomOffset = (Math.random() - 0.5) * 100;
@@ -288,12 +312,76 @@ class BuddhistChantCounter {
         
         this.elements.comboContainer.appendChild(comboElement);
         
-        // 动画完成后移除元素
+        // 2.1秒后滋养莲花
+        setTimeout(() => {
+            this.nourishLotus();
+        }, 2100);
+        
+        // 动画完成后移除佛号元素
         setTimeout(() => {
             if (comboElement.parentNode) {
                 comboElement.parentNode.removeChild(comboElement);
             }
-        }, 2000);
+        }, 3000);
+    }
+    
+    nourishLotus() {
+        // 如果莲花不存在，创建一朵新莲花
+        if (!this.lotusFlower || !this.lotusFlower.parentNode) {
+            this.createLotusFlower();
+        }
+        
+        // 滋养莲花，让它永久长大一点
+        if (this.lotusFlower) {
+            this.lotusScale += 0.1; // 每次增加0.1倍
+            this.lotusFlower.style.transform = `translate(-50%, -180px) scale(${this.lotusScale})`;
+            
+            // 更新莲花计数器
+            this.updateLotusCounter();
+            
+            // 添加短暂的闪烁效果表示被滋养
+            this.lotusFlower.style.filter = 'brightness(1.5)';
+            setTimeout(() => {
+                if (this.lotusFlower) {
+                    this.lotusFlower.style.filter = 'brightness(1)';
+                }
+            }, 500);
+        }
+    }
+    
+    createLotusFlower() {
+        this.lotusFlower = document.createElement('div');
+        this.lotusFlower.className = 'lotus-flower';
+        this.lotusFlower.textContent = '🪷';
+        this.lotusFlower.style.left = '0px'; // 居中位置
+        this.lotusFlower.style.transform = `translate(-50%, -180px) scale(${this.lotusScale})`;
+        
+        this.elements.comboContainer.appendChild(this.lotusFlower);
+        
+        // 创建莲花计数器
+        this.createLotusCounter();
+    }
+    
+    createLotusCounter() {
+        this.lotusCounter = document.createElement('div');
+        this.lotusCounter.className = 'lotus-counter';
+        this.lotusCounter.textContent = this.counts.amitabha;
+        this.lotusCounter.style.left = '40px'; // 莲花右侧
+        this.lotusCounter.style.transform = 'translate(-50%, -180px)';
+        
+        this.elements.comboContainer.appendChild(this.lotusCounter);
+    }
+    
+    updateLotusCounter() {
+        if (this.lotusCounter) {
+            this.lotusCounter.textContent = this.counts.amitabha;
+        }
+    }
+    
+    initializeDefaultMode() {
+        this.updateStatus('木鱼模式 - 按任意键敲击', false);
+        // 初始化时创建莲花
+        this.createLotusFlower();
     }
     
     switchMode(mode) {
@@ -319,11 +407,36 @@ class BuddhistChantCounter {
         }
     }
     
+    switchKeyboardMode(mode) {
+        this.keyboardMode = mode;
+        this.chantProgress = 0; // 重置进度
+        
+        if (mode === 'char') {
+            this.elements.charModeBtn.classList.add('active');
+            this.elements.chantModeBtn.classList.remove('active');
+            this.elements.keyboardHint.textContent = '按4个字符念一句佛号';
+            this.elements.keyboardProgress.style.display = 'block';
+            this.updateProgress();
+        } else {
+            this.elements.charModeBtn.classList.remove('active');
+            this.elements.chantModeBtn.classList.add('active');
+            this.elements.keyboardHint.textContent = '按4个字符念一句佛号';
+            this.elements.keyboardProgress.style.display = 'block';
+            this.updateProgress();
+        }
+    }
+    
+    updateProgress() {
+        const percentage = (this.chantProgress / 4) * 100;
+        this.elements.progressText.textContent = `${this.chantProgress}/4`;
+        this.elements.progressFill.style.width = `${percentage}%`;
+    }
+    
     handleKeyDown(e) {
         if (this.currentMode !== 'keyboard') return;
         
         // 忽略功能键
-        if (e.key === 'Tab' || e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') {
+        if (e.key === 'Tab' || e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta' || e.key === 'Escape') {
             return;
         }
         
@@ -334,28 +447,108 @@ class BuddhistChantCounter {
         }
         
         this.lastKeyTime = currentTime;
-        this.counts.amitabha++;
         
-        // 视觉反馈
-        this.animateCount(this.elements.amitabhaCount);
-        this.showComboEffect();
+        // 两种模式都是按4个字符念一句佛号
+        this.chantProgress++;
+        this.updateProgress();
         this.flashBuddhaImage();
         
-        // 更新显示
-        this.saveCounts();
-        this.updateDisplay();
-        
-        // 更新状态
-        this.elements.recognitionInfo.textContent = `键盘敲击 +1`;
-        this.elements.amitabhaLast.textContent = `最后敲击: ${new Date().toLocaleTimeString('zh-CN')}`;
+        if (this.chantProgress >= 4) {
+            this.counts.amitabha++;
+            this.chantProgress = 0;
+            
+            // 视觉反馈
+            this.animateCount(this.elements.amitabhaCount);
+            this.showComboEffect();
+            this.showBuddhaLight();
+            this.updateProgress();
+            
+            // 更新显示
+            this.saveCounts();
+            this.updateDisplay();
+            
+            // 更新状态
+            if (this.keyboardMode === 'char') {
+                this.elements.recognitionInfo.textContent = `完成一句佛号 +1`;
+                this.elements.amitabhaLast.textContent = `最后完成: ${new Date().toLocaleTimeString('zh-CN')}`;
+            } else {
+                this.elements.recognitionInfo.textContent = `完成一句佛号 +1`;
+                this.elements.amitabhaLast.textContent = `最后完成: ${new Date().toLocaleTimeString('zh-CN')}`;
+            }
+            
+            // 检查是否需要自动进入专注模式
+            this.checkAutoFocus();
+        } else {
+            // 更新状态
+            this.elements.recognitionInfo.textContent = `进度: ${this.chantProgress}/4`;
+        }
     }
     
     flashBuddhaImage() {
-        const buddhaImage = document.querySelector('.buddha-image');
-        buddhaImage.classList.add('keyboard-active');
+        // 移除佛像闪烁效果，保持庄严静止
+    }
+    
+    showBuddhaLight() {
+        const buddhaContainer = document.querySelector('.buddha-image-container');
+        const lightElement = document.createElement('div');
+        lightElement.className = 'buddha-light';
+        
+        buddhaContainer.appendChild(lightElement);
+        
+        // 动画完成后移除元素
         setTimeout(() => {
-            buddhaImage.classList.remove('keyboard-active');
-        }, 150);
+            if (lightElement.parentNode) {
+                lightElement.parentNode.removeChild(lightElement);
+            }
+        }, 3000);
+    }
+    
+    checkAutoFocus() {
+        // 念佛达到阈值且未在专注模式时自动进入
+        if (this.counts.amitabha >= this.autoFocusThreshold && !this.focusMode) {
+            // 延迟1秒后自动进入专注模式
+            setTimeout(() => {
+                if (!this.focusMode) { // 再次检查避免重复进入
+                    this.toggleFocusMode();
+                }
+            }, 1000);
+        }
+    }
+    
+    toggleFocusMode() {
+        this.focusMode = !this.focusMode;
+        
+        if (this.focusMode) {
+            document.body.classList.add('focus-mode');
+            
+            // 创建退出按钮
+            const exitBtn = document.createElement('button');
+            exitBtn.textContent = '退出专注';
+            exitBtn.className = 'exit-focus';
+            exitBtn.id = 'exitFocusBtn';
+            exitBtn.addEventListener('click', () => this.toggleFocusMode());
+            document.body.appendChild(exitBtn);
+            
+            // 在专注模式下，ESC键退出
+            document.addEventListener('keydown', this.handleEscapeKey.bind(this));
+        } else {
+            document.body.classList.remove('focus-mode');
+            
+            // 移除退出按钮
+            const exitBtn = document.getElementById('exitFocusBtn');
+            if (exitBtn) {
+                exitBtn.remove();
+            }
+            
+            // 移除ESC键监听
+            document.removeEventListener('keydown', this.handleEscapeKey.bind(this));
+        }
+    }
+    
+    handleEscapeKey(e) {
+        if (e.key === 'Escape' && this.focusMode) {
+            this.toggleFocusMode();
+        }
     }
     
     attachEventListeners() {
@@ -367,6 +560,13 @@ class BuddhistChantCounter {
         // 模式切换
         this.elements.speechModeBtn.addEventListener('click', () => this.switchMode('speech'));
         this.elements.keyboardModeBtn.addEventListener('click', () => this.switchMode('keyboard'));
+        
+        // 木鱼模式子选项
+        this.elements.charModeBtn.addEventListener('click', () => this.switchKeyboardMode('char'));
+        this.elements.chantModeBtn.addEventListener('click', () => this.switchKeyboardMode('chant'));
+        
+        // 专注模式
+        this.elements.focusBtn.addEventListener('click', () => this.toggleFocusMode());
         
         // 键盘监听
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
@@ -408,6 +608,15 @@ class BuddhistChantCounter {
             
             this.elements.amitabhaLast.textContent = '';
             this.elements.recognitionInfo.textContent = '';
+            
+            // 重置时不移除莲花，只重置大小和计数
+            this.lotusScale = 1; // 重置莲花缩放
+            if (this.lotusFlower) {
+                this.lotusFlower.style.transform = `translate(-50%, -180px) scale(${this.lotusScale})`;
+            }
+            if (this.lotusCounter) {
+                this.lotusCounter.textContent = '0';
+            }
             
             this.saveCounts();
             this.updateDisplay();

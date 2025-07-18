@@ -8,28 +8,44 @@
 </head>
 <body>
     <div class="container">
-        <h1>念佛计数器</h1>
-        <p class="subtitle">语音识别自动计数</p>
+        <div class="header-section" id="headerSection">
+            <h1>念佛计数器</h1>
+            <p class="subtitle">语音识别自动计数</p>
+        </div>
+        
+        <div class="focus-toggle">
+            <button id="focusBtn" class="btn btn-focus">专注模式</button>
+        </div>
         
         <div class="main-layout">
-            <div class="left-panel">
+            <div class="left-panel" id="leftPanel">
                 <div class="mode-selector">
-                    <button id="speechModeBtn" class="btn btn-mode active">语音识别</button>
-                    <button id="keyboardModeBtn" class="btn btn-mode">木鱼模式</button>
+                    <button id="speechModeBtn" class="btn btn-mode">语音识别</button>
+                    <button id="keyboardModeBtn" class="btn btn-mode active">木鱼模式</button>
                 </div>
                 
                 <div class="status-indicator" id="statusIndicator">
                     <span class="status-text">准备就绪</span>
                 </div>
                 
-                <div class="controls" id="speechControls">
+                <div class="controls" id="speechControls" style="display: none;">
                     <button id="startBtn" class="btn btn-primary">开始识别</button>
                     <button id="stopBtn" class="btn btn-secondary" disabled>停止识别</button>
                     <button id="resetBtn" class="btn btn-danger">重置计数</button>
                 </div>
                 
-                <div class="controls" id="keyboardControls" style="display: none;">
-                    <div class="keyboard-hint">按任意键敲击木鱼</div>
+                <div class="controls" id="keyboardControls">
+                    <div class="keyboard-mode-selector">
+                        <button id="charModeBtn" class="btn btn-sub-mode active">按字敲击</button>
+                        <button id="chantModeBtn" class="btn btn-sub-mode">按佛号敲击</button>
+                    </div>
+                    <div class="keyboard-hint" id="keyboardHint">按任意键敲击木鱼</div>
+                    <div class="keyboard-progress" id="keyboardProgress" style="display: none;">
+                        <div class="progress-text">进度: <span id="progressText">0/4</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
                     <button id="resetBtn2" class="btn btn-danger">重置计数</button>
                 </div>
                 
@@ -46,7 +62,7 @@
                 <div class="combo-container" id="comboContainer"></div>
             </div>
             
-            <div class="right-panel">
+            <div class="right-panel" id="rightPanel">
                 <div class="recognition-info" id="recognitionInfo"></div>
                 <div class="last-recognized" id="amitabhaLast"></div>
             </div>
