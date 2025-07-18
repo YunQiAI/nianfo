@@ -22,6 +22,7 @@
                 <div class="mode-selector">
                     <button id="speechModeBtn" class="btn btn-mode">语音识别</button>
                     <button id="keyboardModeBtn" class="btn btn-mode active">木鱼模式</button>
+                    <button id="metronomeBtn" class="btn btn-mode">节拍器</button>
                 </div>
                 
                 <div class="status-indicator" id="statusIndicator">
@@ -49,6 +50,19 @@
                     <button id="resetBtn2" class="btn btn-danger">重置计数</button>
                 </div>
                 
+                <div class="controls" id="metronomeControls" style="display: none;">
+                    <div class="metronome-hint">节拍器自动念佛</div>
+                    <div class="tempo-control">
+                        <label for="tempoSlider">速度 (BPM): <span id="tempoValue">60</span></label>
+                        <input type="range" id="tempoSlider" min="30" max="240" value="60" class="tempo-slider">
+                    </div>
+                    <div class="metronome-actions">
+                        <button id="metronomeStartBtn" class="btn btn-primary">开始</button>
+                        <button id="metronomeStopBtn" class="btn btn-secondary" disabled>停止</button>
+                    </div>
+                    <button id="resetBtn3" class="btn btn-danger">重置计数</button>
+                </div>
+                
                 <div class="count-display">
                     <div class="count-label">阿弥陀佛</div>
                     <div class="count-number" id="amitabhaCount">0</div>
@@ -69,6 +83,7 @@
         </div>
     </div>
     
+    <script src="wooden-fish-data.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

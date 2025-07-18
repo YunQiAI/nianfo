@@ -138,6 +138,63 @@ h1 {
     border: 2px solid #ddd;
 }
 
+.metronome-hint {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #2196F3;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #e3f2fd;
+    border-radius: 8px;
+    border: 2px solid #2196F3;
+}
+
+.tempo-control {
+    margin-bottom: 20px;
+}
+
+.tempo-control label {
+    display: block;
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.tempo-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    background: #ddd;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.tempo-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2196F3;
+    cursor: pointer;
+}
+
+.tempo-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2196F3;
+    cursor: pointer;
+    border: none;
+}
+
+.metronome-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
 
 .keyboard-mode-selector {
     display: flex;

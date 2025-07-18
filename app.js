@@ -2,7 +2,7 @@ class BuddhistChantCounter {
     constructor() {
         this.recognition = null;
         this.isListening = false;
-        this.currentMode = 'keyboard'; // 'speech' 或 'keyboard'
+        this.currentMode = 'keyboard'; // 'speech', 'keyboard' 或 'metronome'
         this.keyboardMode = 'char'; // 'char' 或 'chant'
         this.chantProgress = 0; // 佛号进度 (0-4)
         this.focusMode = false; // 专注模式
@@ -27,9 +27,23 @@ class BuddhistChantCounter {
         this.lotusScale = 1; // 莲花当前缩放比例
         this.lotusCounter = null; // 莲花计数器
         
+        // 音效和节奏记录
+        this.audioContext = null;
+        this.rhythmRecord = []; // 记录敲击时间戳
+        this.autoPlayInterval = null; // 自动播放定时器
+        this.averageInterval = 1000; // 默认间隔（毫秒）
+        this.woodenFishAudio = null; // 木鱼音效文件
+        this.audioBuffer = null; // 音频缓冲区
+        
+        // 节拍器相关
+        this.metronomeInterval = null; // 节拍器定时器
+        this.isMetronomeRunning = false; // 节拍器是否运行
+        this.currentTempo = 60; // 当前BPM
+        
         this.initializeElements();
         this.loadCounts();
         this.initializeSpeechRecognition();
+        this.initializeAudio();
         this.attachEventListeners();
         this.updateDisplay();
         this.initializeDefaultMode();
@@ -59,9 +73,159 @@ class BuddhistChantCounter {
             focusBtn: document.getElementById('focusBtn'),
             headerSection: document.getElementById('headerSection'),
             leftPanel: document.getElementById('leftPanel'),
-            rightPanel: document.getElementById('rightPanel')
+            rightPanel: document.getElementById('rightPanel'),
+            metronomeBtn: document.getElementById('metronomeBtn'),
+            metronomeControls: document.getElementById('metronomeControls'),
+            tempoSlider: document.getElementById('tempoSlider'),
+            tempoValue: document.getElementById('tempoValue'),
+            metronomeStartBtn: document.getElementById('metronomeStartBtn'),
+            metronomeStopBtn: document.getElementById('metronomeStopBtn'),
+            resetBtn3: document.getElementById('resetBtn3')
         };
     }
+    
+    initializeAudio() {
+        // 初始化 Web Audio API
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // 加载木鱼音效文件
+        this.loadWoodenFishAudio();
+    }
+    
+    async loadWoodenFishAudio() {
+        try {
+            // 尝试加载真实木鱼音效文件
+            const response = await fetch('wooden-fish.m4a');
+            if (response.ok) {
+                const arrayBuffer = await response.arrayBuffer();
+                if (arrayBuffer.byteLength > 0) {
+                    this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    console.log('木鱼音效文件加载成功');
+                    return;
+                }
+            }
+            console.error('木鱼音效文件加载失败');
+        } catch (error) {
+            console.error('木鱼音效文件加载失败:', error);
+        }
+    }
+    
+    generateBuiltinAudioBuffer() {
+        try {
+            const sampleRate = this.audioContext.sampleRate;
+            const duration = 0.43; // 基于真实音频的单次敲击时长
+            const length = sampleRate * duration;
+            
+            // 创建立体声音频缓冲区
+            const audioBuffer = this.audioContext.createBuffer(2, length, sampleRate);
+            const leftChannel = audioBuffer.getChannelData(0);
+            const rightChannel = audioBuffer.getChannelData(1);
+            
+            // 基于真实木鱼音效的频谱分析，生成仿真音效
+            for (let i = 0; i < length; i++) {
+                const t = i / sampleRate;
+                
+                // 主要共鸣频率 - 基于木鱼的声学特征
+                let sample = 0;
+                
+                // 基频 - 木鱼的主要音调
+                sample += 0.6 * Math.sin(2 * Math.PI * 450 * t);
+                
+                // 重要谐波 - 模拟木质空腔共鸣
+                sample += 0.4 * Math.sin(2 * Math.PI * 900 * t);
+                sample += 0.25 * Math.sin(2 * Math.PI * 1350 * t);
+                sample += 0.15 * Math.sin(2 * Math.PI * 1800 * t);
+                sample += 0.1 * Math.sin(2 * Math.PI * 2700 * t);
+                
+                // 添加低频成分增加厚度
+                sample += 0.2 * Math.sin(2 * Math.PI * 225 * t);
+                
+                // 敲击瞬间的高频噪声（模拟木棒与木鱼接触）
+                if (t < 0.005) {
+                    sample += 0.3 * (Math.random() * 2 - 1) * Math.exp(-t * 1000);
+                }
+                
+                // 木质共鸣的轻微随机成分
+                sample += 0.02 * (Math.random() * 2 - 1) * Math.exp(-t * 12);
+                
+                // 精确的包络设计 - 模拟真实木鱼的动态
+                let envelope;
+                if (t < 0.002) {
+                    // 极快攻击 - 敲击瞬间
+                    envelope = t / 0.002;
+                } else if (t < 0.02) {
+                    // 快速初期衰减
+                    envelope = 1.0 * Math.exp(-(t - 0.002) * 25);
+                } else {
+                    // 长尾共鸣衰减
+                    envelope = 0.6 * Math.exp(-(t - 0.02) * 6);
+                }
+                
+                // 最终音频处理
+                const finalSample = sample * envelope * 0.15;
+                
+                // 立体声处理 - 轻微的立体声展宽
+                leftChannel[i] = finalSample * (1 + 0.05 * Math.sin(2 * Math.PI * 3 * t));
+                rightChannel[i] = finalSample * (1 - 0.05 * Math.sin(2 * Math.PI * 3 * t));
+            }
+            
+            this.audioBuffer = audioBuffer;
+            console.log('使用高仿真木鱼音效 - 基于真实音频特征合成');
+        } catch (error) {
+            console.log('内置音效生成失败:', error);
+        }
+    }
+    
+    playWoodenFishSound() {
+        if (!this.audioContext) return;
+        
+        // 只使用加载的音频文件
+        if (this.audioBuffer) {
+            this.playAudioBuffer();
+        } else {
+            console.warn('音效文件未加载，无法播放');
+        }
+    }
+    
+    playAudioBuffer() {
+        try {
+            const source = this.audioContext.createBufferSource();
+            const gainNode = this.audioContext.createGain();
+            
+            source.buffer = this.audioBuffer;
+            gainNode.gain.setValueAtTime(0.8, this.audioContext.currentTime);
+            
+            source.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            // 播放单次木鱼音效（约前0.4秒）
+            const duration = 0.4; // 单次敲击的时长
+            source.start(this.audioContext.currentTime, 0, duration);
+            
+            console.log('播放木鱼音效，时长:', duration, '秒');
+        } catch (error) {
+            console.error('播放音效失败:', error);
+        }
+    }
+    
+    playSynthesizedSound() {
+        // 后备的合成音效
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        
+        oscillator.frequency.setValueAtTime(520, this.audioContext.currentTime);
+        oscillator.type = 'triangle';
+        
+        gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.2);
+    }
+    
     
     initializeSpeechRecognition() {
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -422,23 +586,36 @@ class BuddhistChantCounter {
     switchMode(mode) {
         this.currentMode = mode;
         
+        // 停止所有活动
+        if (this.isListening) {
+            this.stopListening();
+        }
+        if (this.isMetronomeRunning) {
+            this.stopMetronome();
+        }
+        
+        // 重置按钮状态
+        this.elements.speechModeBtn.classList.remove('active');
+        this.elements.keyboardModeBtn.classList.remove('active');
+        this.elements.metronomeBtn.classList.remove('active');
+        
+        // 隐藏所有控制面板
+        this.elements.speechControls.style.display = 'none';
+        this.elements.keyboardControls.style.display = 'none';
+        this.elements.metronomeControls.style.display = 'none';
+        
         if (mode === 'speech') {
             this.elements.speechModeBtn.classList.add('active');
-            this.elements.keyboardModeBtn.classList.remove('active');
             this.elements.speechControls.style.display = 'flex';
-            this.elements.keyboardControls.style.display = 'none';
-            this.updateStatus('准备就绪', false);
-        } else {
-            this.elements.speechModeBtn.classList.remove('active');
+            this.updateStatus('语音识别模式', false);
+        } else if (mode === 'keyboard') {
             this.elements.keyboardModeBtn.classList.add('active');
-            this.elements.speechControls.style.display = 'none';
             this.elements.keyboardControls.style.display = 'flex';
             this.updateStatus('木鱼模式 - 按任意键敲击', false);
-            
-            // 如果正在语音识别，先停止
-            if (this.isListening) {
-                this.stopListening();
-            }
+        } else if (mode === 'metronome') {
+            this.elements.metronomeBtn.classList.add('active');
+            this.elements.metronomeControls.style.display = 'flex';
+            this.updateStatus('节拍器模式 - 自动念佛', false);
         }
     }
     
@@ -483,6 +660,12 @@ class BuddhistChantCounter {
         
         this.lastKeyTime = currentTime;
         
+        // 播放木鱼声音
+        this.playWoodenFishSound();
+        
+        // 记录敲击节奏
+        this.recordRhythm();
+        
         // 两种模式都是按4个字符念一句佛号
         this.chantProgress++;
         this.updateProgress();
@@ -521,6 +704,27 @@ class BuddhistChantCounter {
     
     flashBuddhaImage() {
         // 移除佛像闪烁效果，保持庄严静止
+    }
+    
+    recordRhythm() {
+        const now = Date.now();
+        
+        // 记录时间戳
+        this.rhythmRecord.push(now);
+        
+        // 只保留最近20次敲击
+        if (this.rhythmRecord.length > 20) {
+            this.rhythmRecord.shift();
+        }
+        
+        // 计算平均间隔
+        if (this.rhythmRecord.length >= 2) {
+            let totalInterval = 0;
+            for (let i = 1; i < this.rhythmRecord.length; i++) {
+                totalInterval += this.rhythmRecord[i] - this.rhythmRecord[i-1];
+            }
+            this.averageInterval = totalInterval / (this.rhythmRecord.length - 1);
+        }
     }
     
     showLotusRebirth() {
@@ -576,6 +780,9 @@ class BuddhistChantCounter {
                 this.createLotusFlower();
             }
             
+            // 开始自动敲击
+            this.startAutoPlay();
+            
             // 创建退出按钮
             const exitBtn = document.createElement('button');
             exitBtn.textContent = '退出专注';
@@ -588,6 +795,14 @@ class BuddhistChantCounter {
             document.addEventListener('keydown', this.handleEscapeKey.bind(this));
         } else {
             document.body.classList.remove('focus-mode');
+            
+            // 停止自动敲击
+            this.stopAutoPlay();
+            
+            // 停止节拍器（如果正在运行）
+            if (this.isMetronomeRunning) {
+                this.stopMetronome();
+            }
             
             // 退出专注模式时移除莲花
             if (this.lotusFlower && this.lotusFlower.parentNode) {
@@ -610,9 +825,144 @@ class BuddhistChantCounter {
         }
     }
     
+    startAutoPlay() {
+        // 如果没有记录的节奏，使用默认间隔
+        const interval = this.averageInterval || 1000;
+        
+        // 清除已有的定时器
+        if (this.autoPlayInterval) {
+            clearInterval(this.autoPlayInterval);
+        }
+        
+        // 开始自动敲击
+        this.autoPlayInterval = setInterval(() => {
+            if (this.focusMode && this.currentMode === 'keyboard') {
+                this.simulateKeyPress();
+            }
+        }, interval);
+    }
+    
+    stopAutoPlay() {
+        if (this.autoPlayInterval) {
+            clearInterval(this.autoPlayInterval);
+            this.autoPlayInterval = null;
+        }
+    }
+    
+    simulateKeyPress() {
+        // 播放声音
+        this.playWoodenFishSound();
+        
+        // 模拟按键效果
+        this.chantProgress++;
+        this.updateProgress();
+        
+        if (this.chantProgress >= 4) {
+            this.counts.amitabha++;
+            this.chantProgress = 0;
+            
+            // 视觉反馈
+            this.animateCount(this.elements.amitabhaCount);
+            this.showComboEffect();
+            this.showBuddhaLight();
+            this.updateProgress();
+            
+            // 更新显示
+            this.saveCounts();
+            this.updateDisplay();
+            
+            // 更新状态
+            this.elements.recognitionInfo.textContent = `自动念佛 +1`;
+            this.elements.amitabhaLast.textContent = `最后完成: ${new Date().toLocaleTimeString('zh-CN')}`;
+            
+            // 检查是否需要自动进入专注模式（已经在专注模式，所以不需要）
+        } else {
+            // 更新状态
+            this.elements.recognitionInfo.textContent = `进度: ${this.chantProgress}/4`;
+        }
+    }
+    
     handleEscapeKey(e) {
         if (e.key === 'Escape' && this.focusMode) {
             this.toggleFocusMode();
+        }
+    }
+    
+    // 节拍器功能
+    startMetronome() {
+        if (this.isMetronomeRunning) return;
+        
+        this.isMetronomeRunning = true;
+        this.elements.metronomeStartBtn.disabled = true;
+        this.elements.metronomeStopBtn.disabled = false;
+        
+        // 计算节拍间隔（毫秒）
+        const interval = (60 / this.currentTempo) * 1000;
+        
+        this.metronomeInterval = setInterval(() => {
+            this.metronomeHit();
+        }, interval);
+        
+        this.updateStatus(`节拍器运行中 - ${this.currentTempo} BPM`, true);
+        console.log(`节拍器启动，BPM: ${this.currentTempo}，间隔: ${interval}ms`);
+    }
+    
+    stopMetronome() {
+        if (!this.isMetronomeRunning) return;
+        
+        this.isMetronomeRunning = false;
+        this.elements.metronomeStartBtn.disabled = false;
+        this.elements.metronomeStopBtn.disabled = true;
+        
+        if (this.metronomeInterval) {
+            clearInterval(this.metronomeInterval);
+            this.metronomeInterval = null;
+        }
+        
+        this.updateStatus('节拍器已停止', false);
+        console.log('节拍器停止');
+    }
+    
+    metronomeHit() {
+        // 播放音效
+        this.playWoodenFishSound();
+        
+        // 增加计数（每4拍计为一次念佛）
+        this.chantProgress++;
+        
+        if (this.chantProgress >= 4) {
+            this.counts.amitabha++;
+            this.chantProgress = 0;
+            
+            // 视觉反馈
+            this.animateCount(this.elements.amitabhaCount);
+            this.showComboEffect();
+            this.showBuddhaLight();
+            
+            // 更新显示
+            this.saveCounts();
+            this.updateDisplay();
+            
+            // 更新状态
+            this.elements.recognitionInfo.textContent = `节拍器念佛 +1`;
+            this.elements.amitabhaLast.textContent = `最后完成: ${new Date().toLocaleTimeString('zh-CN')}`;
+            
+            // 检查是否需要自动进入专注模式
+            this.checkAutoFocus();
+        }
+    }
+    
+    updateTempo(tempo) {
+        this.currentTempo = tempo;
+        this.elements.tempoValue.textContent = tempo;
+        
+        // 如果节拍器正在运行，重新启动以应用新速度
+        if (this.isMetronomeRunning) {
+            this.stopMetronome();
+            // 短暂延迟后重新启动，避免音效重叠
+            setTimeout(() => {
+                this.startMetronome();
+            }, 100);
         }
     }
     
@@ -621,14 +971,21 @@ class BuddhistChantCounter {
         this.elements.stopBtn.addEventListener('click', () => this.stopListening());
         this.elements.resetBtn.addEventListener('click', () => this.resetCounts());
         this.elements.resetBtn2.addEventListener('click', () => this.resetCounts());
+        this.elements.resetBtn3.addEventListener('click', () => this.resetCounts());
         
         // 模式切换
         this.elements.speechModeBtn.addEventListener('click', () => this.switchMode('speech'));
         this.elements.keyboardModeBtn.addEventListener('click', () => this.switchMode('keyboard'));
+        this.elements.metronomeBtn.addEventListener('click', () => this.switchMode('metronome'));
         
         // 木鱼模式子选项
         this.elements.charModeBtn.addEventListener('click', () => this.switchKeyboardMode('char'));
         this.elements.chantModeBtn.addEventListener('click', () => this.switchKeyboardMode('chant'));
+        
+        // 节拍器控制
+        this.elements.metronomeStartBtn.addEventListener('click', () => this.startMetronome());
+        this.elements.metronomeStopBtn.addEventListener('click', () => this.stopMetronome());
+        this.elements.tempoSlider.addEventListener('input', (e) => this.updateTempo(parseInt(e.target.value)));
         
         // 专注模式
         this.elements.focusBtn.addEventListener('click', () => this.toggleFocusMode());
@@ -667,9 +1024,21 @@ class BuddhistChantCounter {
     
     resetCounts() {
         if (confirm('确定要重置所有计数吗？')) {
+            // 停止所有活动
+            if (this.isListening) {
+                this.stopListening();
+            }
+            if (this.isMetronomeRunning) {
+                this.stopMetronome();
+            }
+            
             this.counts = {
                 amitabha: 0
             };
+            
+            // 重置进度
+            this.chantProgress = 0;
+            this.updateProgress();
             
             this.elements.amitabhaLast.textContent = '';
             this.elements.recognitionInfo.textContent = '';
