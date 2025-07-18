@@ -2,6 +2,7 @@ class BuddhistChantCounter {
     constructor() {
         this.recognition = null;
         this.isListening = false;
+        this.currentMode = 'speech'; // 'speech' 或 'keyboard'
         this.counts = {
             amitabha: 0
         };
@@ -16,6 +17,8 @@ class BuddhistChantCounter {
         this.cooldownPeriod = 1000; // 防重复计数冷却时间（毫秒）
         this.processedPhrases = new Set();
         this.lastProcessedText = '';
+        this.keyboardCooldown = 200; // 键盘模式冷却时间（毫秒）
+        this.lastKeyTime = 0;
         
         this.initializeElements();
         this.loadCounts();
@@ -29,12 +32,16 @@ class BuddhistChantCounter {
             startBtn: document.getElementById('startBtn'),
             stopBtn: document.getElementById('stopBtn'),
             resetBtn: document.getElementById('resetBtn'),
+            resetBtn2: document.getElementById('resetBtn2'),
             statusIndicator: document.getElementById('statusIndicator'),
             amitabhaCount: document.getElementById('amitabhaCount'),
             amitabhaLast: document.getElementById('amitabhaLast'),
             recognitionInfo: document.getElementById('recognitionInfo'),
-            totalCount: document.getElementById('totalCount'),
-            transcript: document.getElementById('transcript')
+            comboContainer: document.getElementById('comboContainer'),
+            speechModeBtn: document.getElementById('speechModeBtn'),
+            keyboardModeBtn: document.getElementById('keyboardModeBtn'),
+            speechControls: document.getElementById('speechControls'),
+            keyboardControls: document.getElementById('keyboardControls')
         };
     }
     
@@ -142,8 +149,6 @@ class BuddhistChantCounter {
             return;
         }
         
-        this.addToTranscript(text, timestamp);
-        
         // 简化识别逻辑：只检查是否包含"阿弥陀佛"，每次只+1
         if (this.chantPatterns.amitabha.test(text)) {
             // 检查冷却时间，避免重复计数
@@ -153,6 +158,7 @@ class BuddhistChantCounter {
                 this.elements.amitabhaLast.textContent = `最后识别: ${timestamp}`;
                 this.elements.recognitionInfo.textContent = `识别到佛号 +1`;
                 this.animateCount(this.elements.amitabhaCount);
+                this.showComboEffect();
                 
                 this.saveCounts();
                 this.updateDisplay();
@@ -185,6 +191,7 @@ class BuddhistChantCounter {
             this.elements.amitabhaLast.textContent = `最后识别: ${timestamp}`;
             this.elements.recognitionInfo.textContent = `识别到佛号 +1`;
             this.animateCount(this.elements.amitabhaCount);
+            this.showComboEffect();
             
             this.processedPhrases.add(text);
             this.saveCounts();
@@ -270,25 +277,99 @@ class BuddhistChantCounter {
         }, 300);
     }
     
-    addToTranscript(text, timestamp) {
-        const item = document.createElement('div');
-        item.className = 'transcript-item';
-        item.innerHTML = `
-            <span class="timestamp">${timestamp}</span>
-            <span class="recognized">${text}</span>
-        `;
+    showComboEffect() {
+        const comboElement = document.createElement('div');
+        comboElement.className = 'combo-effect';
+        comboElement.textContent = `阿弥陀佛 × ${this.counts.amitabha}`;
         
-        this.elements.transcript.insertBefore(item, this.elements.transcript.firstChild);
+        // 随机位置偏移，让特效更自然
+        const randomOffset = (Math.random() - 0.5) * 100;
+        comboElement.style.left = `${randomOffset}px`;
         
-        if (this.elements.transcript.children.length > 50) {
-            this.elements.transcript.removeChild(this.elements.transcript.lastChild);
+        this.elements.comboContainer.appendChild(comboElement);
+        
+        // 动画完成后移除元素
+        setTimeout(() => {
+            if (comboElement.parentNode) {
+                comboElement.parentNode.removeChild(comboElement);
+            }
+        }, 2000);
+    }
+    
+    switchMode(mode) {
+        this.currentMode = mode;
+        
+        if (mode === 'speech') {
+            this.elements.speechModeBtn.classList.add('active');
+            this.elements.keyboardModeBtn.classList.remove('active');
+            this.elements.speechControls.style.display = 'flex';
+            this.elements.keyboardControls.style.display = 'none';
+            this.updateStatus('准备就绪', false);
+        } else {
+            this.elements.speechModeBtn.classList.remove('active');
+            this.elements.keyboardModeBtn.classList.add('active');
+            this.elements.speechControls.style.display = 'none';
+            this.elements.keyboardControls.style.display = 'flex';
+            this.updateStatus('木鱼模式 - 按任意键敲击', false);
+            
+            // 如果正在语音识别，先停止
+            if (this.isListening) {
+                this.stopListening();
+            }
         }
+    }
+    
+    handleKeyDown(e) {
+        if (this.currentMode !== 'keyboard') return;
+        
+        // 忽略功能键
+        if (e.key === 'Tab' || e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') {
+            return;
+        }
+        
+        // 防止过快连击
+        const currentTime = Date.now();
+        if (currentTime - this.lastKeyTime < this.keyboardCooldown) {
+            return;
+        }
+        
+        this.lastKeyTime = currentTime;
+        this.counts.amitabha++;
+        
+        // 视觉反馈
+        this.animateCount(this.elements.amitabhaCount);
+        this.showComboEffect();
+        this.flashBuddhaImage();
+        
+        // 更新显示
+        this.saveCounts();
+        this.updateDisplay();
+        
+        // 更新状态
+        this.elements.recognitionInfo.textContent = `键盘敲击 +1`;
+        this.elements.amitabhaLast.textContent = `最后敲击: ${new Date().toLocaleTimeString('zh-CN')}`;
+    }
+    
+    flashBuddhaImage() {
+        const buddhaImage = document.querySelector('.buddha-image');
+        buddhaImage.classList.add('keyboard-active');
+        setTimeout(() => {
+            buddhaImage.classList.remove('keyboard-active');
+        }, 150);
     }
     
     attachEventListeners() {
         this.elements.startBtn.addEventListener('click', () => this.startListening());
         this.elements.stopBtn.addEventListener('click', () => this.stopListening());
         this.elements.resetBtn.addEventListener('click', () => this.resetCounts());
+        this.elements.resetBtn2.addEventListener('click', () => this.resetCounts());
+        
+        // 模式切换
+        this.elements.speechModeBtn.addEventListener('click', () => this.switchMode('speech'));
+        this.elements.keyboardModeBtn.addEventListener('click', () => this.switchMode('keyboard'));
+        
+        // 键盘监听
+        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
     }
     
     startListening() {
@@ -327,7 +408,6 @@ class BuddhistChantCounter {
             
             this.elements.amitabhaLast.textContent = '';
             this.elements.recognitionInfo.textContent = '';
-            this.elements.transcript.innerHTML = '';
             
             this.saveCounts();
             this.updateDisplay();
@@ -345,7 +425,6 @@ class BuddhistChantCounter {
     
     updateDisplay() {
         this.elements.amitabhaCount.textContent = this.counts.amitabha;
-        this.elements.totalCount.textContent = this.counts.amitabha;
     }
     
     saveCounts() {

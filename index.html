@@ -11,36 +11,45 @@
         <h1>念佛计数器</h1>
         <p class="subtitle">语音识别自动计数</p>
         
-        <div class="buddha-image-container">
-            <img src="amituofo.jpg" alt="阿弥陀佛" class="buddha-image">
-        </div>
-        
-        <div class="status-indicator" id="statusIndicator">
-            <span class="status-text">准备就绪</span>
-        </div>
-        
-        <div class="controls">
-            <button id="startBtn" class="btn btn-primary">开始识别</button>
-            <button id="stopBtn" class="btn btn-secondary" disabled>停止识别</button>
-            <button id="resetBtn" class="btn btn-danger">重置计数</button>
-        </div>
-        
-        <div class="chants-container">
-            <div class="chant-card main-card">
-                <h2>阿弥陀佛</h2>
-                <div class="count" id="amitabhaCount">0</div>
-                <div class="last-recognized" id="amitabhaLast"></div>
-                <div class="recognition-info" id="recognitionInfo"></div>
+        <div class="main-layout">
+            <div class="left-panel">
+                <div class="mode-selector">
+                    <button id="speechModeBtn" class="btn btn-mode active">语音识别</button>
+                    <button id="keyboardModeBtn" class="btn btn-mode">木鱼模式</button>
+                </div>
+                
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="status-text">准备就绪</span>
+                </div>
+                
+                <div class="controls" id="speechControls">
+                    <button id="startBtn" class="btn btn-primary">开始识别</button>
+                    <button id="stopBtn" class="btn btn-secondary" disabled>停止识别</button>
+                    <button id="resetBtn" class="btn btn-danger">重置计数</button>
+                </div>
+                
+                <div class="controls" id="keyboardControls" style="display: none;">
+                    <div class="keyboard-hint">按任意键敲击木鱼</div>
+                    <button id="resetBtn2" class="btn btn-danger">重置计数</button>
+                </div>
+                
+                <div class="count-display">
+                    <div class="count-label">阿弥陀佛</div>
+                    <div class="count-number" id="amitabhaCount">0</div>
+                </div>
             </div>
-        </div>
-        
-        <div class="total-section">
-            <h3>总计数：<span id="totalCount">0</span></h3>
-        </div>
-        
-        <div class="transcript-section">
-            <h3>识别记录</h3>
-            <div id="transcript" class="transcript"></div>
+            
+            <div class="center-panel">
+                <div class="buddha-image-container">
+                    <img src="amituofo.jpg" alt="阿弥陀佛" class="buddha-image">
+                </div>
+                <div class="combo-container" id="comboContainer"></div>
+            </div>
+            
+            <div class="right-panel">
+                <div class="recognition-info" id="recognitionInfo"></div>
+                <div class="last-recognized" id="amitabhaLast"></div>
+            </div>
         </div>
     </div>
     
