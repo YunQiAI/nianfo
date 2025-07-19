@@ -2,7 +2,7 @@ class BuddhistChantCounter {
     constructor() {
         this.recognition = null;
         this.isListening = false;
-        this.currentMode = 'keyboard'; // 'speech', 'keyboard' 或 'metronome'
+        this.currentMode = 'metronome'; // 'speech', 'keyboard', 'metronome' 或 'buddhaLight'
         this.keyboardMode = 'char'; // 'char' 或 'chant'
         this.chantProgress = 0; // 佛号进度 (0-4)
         this.focusMode = false; // 专注模式
@@ -38,7 +38,21 @@ class BuddhistChantCounter {
         // 节拍器相关
         this.metronomeInterval = null; // 节拍器定时器
         this.isMetronomeRunning = false; // 节拍器是否运行
-        this.currentTempo = 60; // 当前BPM
+        this.currentTempo = 240; // 当前BPM
+        
+        // 贡品相关
+        this.offerings = {
+            water: 0,
+            flower: 0,
+            lamp: 0
+        };
+        
+        // 佛光普照相关
+        this.buddhaLightInterval = null; // 佛光定时器
+        this.isBuddhaLightRunning = false; // 佛光是否运行
+        this.lightTempo = 30; // 放光频率（次/分）
+        this.lightIntensity = 80; // 光芒强度（百分比）
+        this.lotusEnabled = true; // 莲花效果开关
         
         this.initializeElements();
         this.loadCounts();
@@ -80,7 +94,18 @@ class BuddhistChantCounter {
             tempoValue: document.getElementById('tempoValue'),
             metronomeStartBtn: document.getElementById('metronomeStartBtn'),
             metronomeStopBtn: document.getElementById('metronomeStopBtn'),
-            resetBtn3: document.getElementById('resetBtn3')
+            resetBtn3: document.getElementById('resetBtn3'),
+            offeringsDisplay: document.getElementById('offeringsDisplay'),
+            buddhaLightBtn: document.getElementById('buddhaLightBtn'),
+            buddhaLightControls: document.getElementById('buddhaLightControls'),
+            lightTempoSlider: document.getElementById('lightTempoSlider'),
+            lightTempoValue: document.getElementById('lightTempoValue'),
+            lightIntensitySlider: document.getElementById('lightIntensitySlider'),
+            lightIntensityValue: document.getElementById('lightIntensityValue'),
+            lotusToggle: document.getElementById('lotusToggle'),
+            buddhaLightStartBtn: document.getElementById('buddhaLightStartBtn'),
+            buddhaLightStopBtn: document.getElementById('buddhaLightStopBtn'),
+            resetBtn4: document.getElementById('resetBtn4')
         };
     }
     
@@ -593,16 +618,21 @@ class BuddhistChantCounter {
         if (this.isMetronomeRunning) {
             this.stopMetronome();
         }
+        if (this.isBuddhaLightRunning) {
+            this.stopBuddhaLight();
+        }
         
         // 重置按钮状态
         this.elements.speechModeBtn.classList.remove('active');
         this.elements.keyboardModeBtn.classList.remove('active');
         this.elements.metronomeBtn.classList.remove('active');
+        this.elements.buddhaLightBtn.classList.remove('active');
         
         // 隐藏所有控制面板
         this.elements.speechControls.style.display = 'none';
         this.elements.keyboardControls.style.display = 'none';
         this.elements.metronomeControls.style.display = 'none';
+        this.elements.buddhaLightControls.style.display = 'none';
         
         if (mode === 'speech') {
             this.elements.speechModeBtn.classList.add('active');
@@ -616,6 +646,10 @@ class BuddhistChantCounter {
             this.elements.metronomeBtn.classList.add('active');
             this.elements.metronomeControls.style.display = 'flex';
             this.updateStatus('节拍器模式 - 自动念佛', false);
+        } else if (mode === 'buddhaLight') {
+            this.elements.buddhaLightBtn.classList.add('active');
+            this.elements.buddhaLightControls.style.display = 'flex';
+            this.updateStatus('佛光普照模式 - 禅修冥想', false);
         }
     }
     
@@ -972,11 +1006,13 @@ class BuddhistChantCounter {
         this.elements.resetBtn.addEventListener('click', () => this.resetCounts());
         this.elements.resetBtn2.addEventListener('click', () => this.resetCounts());
         this.elements.resetBtn3.addEventListener('click', () => this.resetCounts());
+        this.elements.resetBtn4.addEventListener('click', () => this.resetCounts());
         
         // 模式切换
         this.elements.speechModeBtn.addEventListener('click', () => this.switchMode('speech'));
         this.elements.keyboardModeBtn.addEventListener('click', () => this.switchMode('keyboard'));
         this.elements.metronomeBtn.addEventListener('click', () => this.switchMode('metronome'));
+        this.elements.buddhaLightBtn.addEventListener('click', () => this.switchMode('buddhaLight'));
         
         // 木鱼模式子选项
         this.elements.charModeBtn.addEventListener('click', () => this.switchKeyboardMode('char'));
@@ -986,6 +1022,13 @@ class BuddhistChantCounter {
         this.elements.metronomeStartBtn.addEventListener('click', () => this.startMetronome());
         this.elements.metronomeStopBtn.addEventListener('click', () => this.stopMetronome());
         this.elements.tempoSlider.addEventListener('input', (e) => this.updateTempo(parseInt(e.target.value)));
+        
+        // 佛光普照控制
+        this.elements.buddhaLightStartBtn.addEventListener('click', () => this.startBuddhaLight());
+        this.elements.buddhaLightStopBtn.addEventListener('click', () => this.stopBuddhaLight());
+        this.elements.lightTempoSlider.addEventListener('input', (e) => this.updateLightTempo(parseInt(e.target.value)));
+        this.elements.lightIntensitySlider.addEventListener('input', (e) => this.updateLightIntensity(parseInt(e.target.value)));
+        this.elements.lotusToggle.addEventListener('change', (e) => this.toggleLotusEffect(e.target.checked));
         
         // 专注模式
         this.elements.focusBtn.addEventListener('click', () => this.toggleFocusMode());
@@ -1086,8 +1129,172 @@ class BuddhistChantCounter {
             }
         }
     }
+    
+    // 佛光普照相关方法
+    startBuddhaLight() {
+        if (this.isBuddhaLightRunning) {
+            return;
+        }
+        
+        this.isBuddhaLightRunning = true;
+        this.elements.buddhaLightStartBtn.disabled = true;
+        this.elements.buddhaLightStopBtn.disabled = false;
+        
+        // 计算间隔时间
+        const interval = (60 / this.lightTempo) * 1000; // 转换为毫秒
+        
+        // 启动定时器来触发佛光和莲花效果
+        this.buddhaLightInterval = setInterval(() => {
+            // 触发佛光效果（复用现有方法）
+            this.createBuddhaLight();
+            
+            // 触发莲花效果（如果启用）
+            if (this.lotusEnabled) {
+                this.createLotusFlower();
+            }
+            
+            // 播放音效但不计数
+            this.playWoodenFishSound();
+        }, interval);
+        
+        this.updateStatus(`佛光普照中 - ${this.lightTempo} 次/分`, true);
+        console.log(`佛光普照启动，频率: ${this.lightTempo} 次/分，间隔: ${interval}ms`);
+    }
+    
+    stopBuddhaLight() {
+        if (!this.isBuddhaLightRunning) {
+            return;
+        }
+        
+        this.isBuddhaLightRunning = false;
+        this.elements.buddhaLightStartBtn.disabled = false;
+        this.elements.buddhaLightStopBtn.disabled = true;
+        
+        // 清除定时器
+        if (this.buddhaLightInterval) {
+            clearInterval(this.buddhaLightInterval);
+            this.buddhaLightInterval = null;
+        }
+        
+        this.updateStatus('佛光普照模式 - 禅修冥想', false);
+        console.log('佛光普照停止');
+    }
+    
+    updateLightTempo(tempo) {
+        this.lightTempo = tempo;
+        this.elements.lightTempoValue.textContent = tempo;
+        
+        // 如果正在运行，重启以应用新频率
+        if (this.isBuddhaLightRunning) {
+            this.stopBuddhaLight();
+            setTimeout(() => this.startBuddhaLight(), 100);
+        }
+    }
+    
+    updateLightIntensity(intensity) {
+        this.lightIntensity = intensity;
+        this.elements.lightIntensityValue.textContent = intensity;
+        // 光芒强度可以通过调整现有佛光效果的透明度来实现
+    }
+    
+    toggleLotusEffect(enabled) {
+        this.lotusEnabled = enabled;
+        // 简单的开关，在定时器中检查此状态
+    }
+    
+    // 贡品相关方法
+    addOffering(type) {
+        this.offerings[type]++;
+        this.updateOfferingsDisplay();
+        this.saveOfferings();
+        this.showOfferingAnimation(type);
+    }
+    
+    updateOfferingsDisplay() {
+        const display = this.elements.offeringsDisplay;
+        display.innerHTML = '';
+        
+        // 按类型顺序排列贡品
+        const order = ['water', 'flower', 'lamp'];
+        order.forEach(type => {
+            const count = this.offerings[type];
+            for (let i = 0; i < count; i++) {
+                const offering = document.createElement('div');
+                offering.className = `offering-item-display ${type}`;
+                offering.innerHTML = this.getOfferingIcon(type);
+                display.appendChild(offering);
+            }
+        });
+    }
+    
+    getOfferingIcon(type) {
+        const icons = {
+            water: '💧',
+            flower: '🌸',
+            lamp: '🕯️'
+        };
+        return icons[type] || '';
+    }
+    
+    showOfferingAnimation(type) {
+        // 创建飞到佛台的动画效果
+        const sourceBtn = document.querySelector(`[data-type="${type}"] .btn-offering`);
+        const targetAltar = this.elements.offeringsDisplay;
+        
+        if (sourceBtn && targetAltar) {
+            const flyingOffering = document.createElement('div');
+            flyingOffering.className = 'flying-offering';
+            flyingOffering.innerHTML = this.getOfferingIcon(type);
+            
+            const sourceRect = sourceBtn.getBoundingClientRect();
+            const targetRect = targetAltar.getBoundingClientRect();
+            
+            flyingOffering.style.position = 'fixed';
+            flyingOffering.style.left = sourceRect.left + 'px';
+            flyingOffering.style.top = sourceRect.top + 'px';
+            flyingOffering.style.fontSize = '2rem';
+            flyingOffering.style.zIndex = '1000';
+            flyingOffering.style.pointerEvents = 'none';
+            
+            document.body.appendChild(flyingOffering);
+            
+            // 动画到目标位置
+            setTimeout(() => {
+                flyingOffering.style.transition = 'all 1s ease-out';
+                flyingOffering.style.left = targetRect.left + targetRect.width/2 + 'px';
+                flyingOffering.style.top = targetRect.top + targetRect.height/2 + 'px';
+                flyingOffering.style.transform = 'scale(0.5)';
+                flyingOffering.style.opacity = '0';
+                
+                setTimeout(() => {
+                    document.body.removeChild(flyingOffering);
+                    this.updateOfferingsDisplay();
+                }, 1000);
+            }, 100);
+        }
+    }
+    
+    saveOfferings() {
+        localStorage.setItem('buddhist_offerings', JSON.stringify(this.offerings));
+    }
+    
+    loadOfferings() {
+        const saved = localStorage.getItem('buddhist_offerings');
+        if (saved) {
+            try {
+                this.offerings = { ...this.offerings, ...JSON.parse(saved) };
+            } catch (error) {
+                console.error('加载保存的贡品失败:', error);
+            }
+        }
+        this.updateOfferingsDisplay();
+    }
 }
 
+// 全局变量供HTML调用
+let buddhistCounter;
+
 document.addEventListener('DOMContentLoaded', () => {
-    new BuddhistChantCounter();
+    buddhistCounter = new BuddhistChantCounter();
+    buddhistCounter.loadOfferings();
 });
