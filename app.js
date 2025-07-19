@@ -809,13 +809,18 @@ class BuddhistChantCounter {
         if (this.focusMode) {
             document.body.classList.add('focus-mode');
             
-            // 进入专注模式时创建莲花
-            if (!this.lotusFlower || !this.lotusFlower.parentNode) {
-                this.createLotusFlower();
+            // 如果是佛光普照模式，添加特殊标识
+            if (this.currentMode === 'buddhaLight') {
+                document.body.classList.add('buddha-light-focus');
+            } else {
+                // 进入专注模式时创建莲花
+                if (!this.lotusFlower || !this.lotusFlower.parentNode) {
+                    this.createLotusFlower();
+                }
+                
+                // 开始自动敲击
+                this.startAutoPlay();
             }
-            
-            // 开始自动敲击
-            this.startAutoPlay();
             
             // 创建退出按钮
             const exitBtn = document.createElement('button');
@@ -829,20 +834,26 @@ class BuddhistChantCounter {
             document.addEventListener('keydown', this.handleEscapeKey.bind(this));
         } else {
             document.body.classList.remove('focus-mode');
+            document.body.classList.remove('buddha-light-focus');
             
-            // 停止自动敲击
-            this.stopAutoPlay();
-            
-            // 停止节拍器（如果正在运行）
-            if (this.isMetronomeRunning) {
-                this.stopMetronome();
+            // 只在非佛光普照模式下停止自动敲击和清理莲花
+            if (this.currentMode !== 'buddhaLight') {
+                // 停止自动敲击
+                this.stopAutoPlay();
+                
+                // 停止节拍器（如果正在运行）
+                if (this.isMetronomeRunning) {
+                    this.stopMetronome();
+                }
+                
+                // 退出专注模式时移除莲花
+                if (this.lotusFlower && this.lotusFlower.parentNode) {
+                    this.lotusFlower.parentNode.removeChild(this.lotusFlower);
+                    this.lotusFlower = null;
+                }
             }
             
-            // 退出专注模式时移除莲花
-            if (this.lotusFlower && this.lotusFlower.parentNode) {
-                this.lotusFlower.parentNode.removeChild(this.lotusFlower);
-                this.lotusFlower = null;
-            }
+            // 清理莲花计数器（所有模式都清理）
             if (this.lotusCounter && this.lotusCounter.parentNode) {
                 this.lotusCounter.parentNode.removeChild(this.lotusCounter);
                 this.lotusCounter = null;
@@ -1146,11 +1157,11 @@ class BuddhistChantCounter {
         // 启动定时器来触发佛光和莲花效果
         this.buddhaLightInterval = setInterval(() => {
             // 触发佛光效果（复用现有方法）
-            this.createBuddhaLight();
+            this.showBuddhaLight();
             
-            // 触发莲花效果（如果启用）
+            // 触发莲花效果（如果启用，但不显示计数）
             if (this.lotusEnabled) {
-                this.createLotusFlower();
+                this.createBuddhaLightLotus();
             }
             
             // 播放音效但不计数
@@ -1200,6 +1211,44 @@ class BuddhistChantCounter {
     toggleLotusEffect(enabled) {
         this.lotusEnabled = enabled;
         // 简单的开关，在定时器中检查此状态
+    }
+    
+    // 佛光普照专用莲花效果（不显示计数）
+    createBuddhaLightLotus() {
+        const lotusFlower = document.createElement('div');
+        lotusFlower.className = 'lotus-flower';
+        lotusFlower.innerHTML = `
+            <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                <g transform="translate(40, 40)">
+                    <!-- 侧视莲花 - 花瓣垂直向上 -->
+                    <!-- 后层花瓣 -->
+                    <ellipse cx="0" cy="-15" rx="5" ry="15" fill="#FFB6C1" opacity="0.7"/>
+                    <ellipse cx="-7" cy="-12" rx="4" ry="12" fill="#FFB6C1" opacity="0.7" transform="rotate(-15)"/>
+                    <ellipse cx="7" cy="-12" rx="4" ry="12" fill="#FFB6C1" opacity="0.7" transform="rotate(15)"/>
+                    
+                    <!-- 中层花瓣 -->
+                    <ellipse cx="-4" cy="-13" rx="4" ry="13" fill="#FFC0CB" opacity="0.85" transform="rotate(-8)"/>
+                    <ellipse cx="4" cy="-13" rx="4" ry="13" fill="#FFC0CB" opacity="0.85" transform="rotate(8)"/>
+                    
+                    <!-- 前层花瓣 -->
+                    <ellipse cx="0" cy="-12" rx="5" ry="14" fill="#FFD4DB" opacity="0.9"/>
+                    
+                    <!-- 花心底部 -->
+                    <ellipse cx="0" cy="0" rx="8" ry="3" fill="#FFD700" opacity="0.9"/>
+                </g>
+            </svg>
+        `;
+        lotusFlower.style.left = '0px'; // 居中位置
+        lotusFlower.style.transform = 'translate(-50%, -180px) scale(1)';
+        
+        this.elements.comboContainer.appendChild(lotusFlower);
+        
+        // 设置自动清理，不创建计数器
+        setTimeout(() => {
+            if (lotusFlower.parentNode) {
+                lotusFlower.parentNode.removeChild(lotusFlower);
+            }
+        }, 3000);
     }
     
     // 贡品相关方法
