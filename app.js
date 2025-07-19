@@ -125,13 +125,22 @@ class BuddhistChantCounter {
                 const arrayBuffer = await response.arrayBuffer();
                 if (arrayBuffer.byteLength > 0) {
                     this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-                    console.log('木鱼音效文件加载成功');
+                    console.log('✅ 木鱼音效文件加载成功');
                     return;
                 }
             }
-            console.error('木鱼音效文件加载失败');
+            console.error('❌ 木鱼音效文件加载失败');
         } catch (error) {
-            console.error('木鱼音效文件加载失败:', error);
+            console.error('❌ 木鱼音效文件加载失败:', error);
+        }
+        
+        // 如果加载失败，使用内置音效数据
+        console.warn('尝试使用内置木鱼音效...');
+        if (typeof WOODEN_FISH_AUDIO_DATA !== 'undefined') {
+            this.audioBuffer = WOODEN_FISH_AUDIO_DATA.generateAudioBuffer(this.audioContext);
+            console.log('✅ 内置木鱼音效加载成功');
+        } else {
+            console.error('❌ 内置音效数据不可用');
         }
     }
     
@@ -204,12 +213,32 @@ class BuddhistChantCounter {
     playWoodenFishSound() {
         if (!this.audioContext) return;
         
-        // 只使用加载的音频文件
+        // 优先使用加载的音频文件
         if (this.audioBuffer) {
             this.playAudioBuffer();
         } else {
-            console.warn('音效文件未加载，无法播放');
+            // 如果音频文件加载失败，使用合成音效
+            console.warn('音效文件未加载，使用合成音效');
+            this.playSynthesizedSound();
         }
+    }
+    
+    playSynthesizedSound() {
+        // 后备的合成音效
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        
+        oscillator.frequency.setValueAtTime(520, this.audioContext.currentTime);
+        oscillator.type = 'triangle';
+        
+        gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.2);
     }
     
     playAudioBuffer() {
