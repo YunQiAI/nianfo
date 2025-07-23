@@ -1,11 +1,11 @@
 {
   "productName": "念佛计数器",
   "version": "0.1.0",
-  "identifier": "com.nianfo.app",
+  "identifier": "com.nianfo.counter",
   "build": {
     "beforeDevCommand": "",
     "beforeBuildCommand": "",
-    "frontendDist": "../",
+    "frontendDist": "../www",
     "devUrl": "http://localhost:8080"
   },
   "app": {
