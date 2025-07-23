@@ -6,13 +6,8 @@
   "permissions": [
     "core:default",
     "shell:allow-open",
-    {
-      "identifier": "http:default",
-      "allow": [
-        {
-          "url": "https://**"
-        }
-      ]
-    }
+    "core:app:default",
+    "core:path:default",
+    "core:window:default"
   ]
 }

@@ -1,20 +1,20 @@
 {
   "productName": "念佛计数器",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "identifier": "com.nianfo.app",
   "build": {
     "beforeDevCommand": "",
     "beforeBuildCommand": "",
     "frontendDist": "../",
-    "devUrl": "../"
+    "devUrl": "http://localhost:8080"
   },
   "app": {
     "withGlobalTauri": true,
     "windows": [
       {
         "title": "念佛计数器",
-        "width": 800,
-        "height": 600,
+        "width": 1200,
+        "height": 1000,
         "resizable": true,
         "fullscreen": false,
         "alwaysOnTop": false,
@@ -24,7 +24,6 @@
         "minWidth": 400,
         "minHeight": 400,
         "skipTaskbar": false,
-        "fileDropEnabled": false,
         "focus": true
       }
     ],
@@ -56,9 +55,6 @@
       "signingIdentity": null,
       "providerShortName": null,
       "entitlements": null
-    },
-    "iOS": {
-      "capabilities": []
     }
   },
   "plugins": {}

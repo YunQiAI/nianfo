@@ -1,6 +1,7 @@
 {
   "appId": "com.nianfo.app",
   "appName": "念佛计数器",
+  "version": "0.1.0",
   "webDir": "www",
   "server": {
     "androidScheme": "https"

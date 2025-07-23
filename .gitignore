@@ -41,7 +41,12 @@ src-tauri/WixTools/
 *.tmp
 *.temp
 .cache/
+create_icons.py
 
 # 锁文件（根据团队约定可选择是否忽略）
 # package-lock.json
 # yarn.lock
+
+# 开发工具生成的文件
+*.pid
+.vite/

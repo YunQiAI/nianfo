@@ -34,6 +34,9 @@ class PlatformAdapter {
     initTauri() {
         // Tauri 特定初始化
         console.log('Tauri 环境初始化');
+        
+        // 在 Tauri 环境下，语音识别仍使用 Web Speech API
+        // 但存储使用 Tauri 的文件系统
     }
 
     async initCapacitor() {
@@ -205,7 +208,38 @@ class PlatformAdapter {
 
     // 获取存储API
     getStorage() {
-        if (this.platform === 'capacitor' && window.Capacitor.isNativePlatform()) {
+        if (this.platform === 'tauri') {
+            // 使用 Tauri 文件系统存储
+            return {
+                getItem: async (key) => {
+                    try {
+                        const { invoke } = window.__TAURI__.core;
+                        const data = await invoke('load_data', { key });
+                        return data || null;
+                    } catch (error) {
+                        console.error('Tauri 读取数据失败:', error);
+                        return null;
+                    }
+                },
+                setItem: async (key, value) => {
+                    try {
+                        const { invoke } = window.__TAURI__.core;
+                        await invoke('save_data', { key, value });
+                    } catch (error) {
+                        console.error('Tauri 保存数据失败:', error);
+                    }
+                },
+                removeItem: async (key) => {
+                    // Tauri 版本暂时通过保存空值实现删除
+                    try {
+                        const { invoke } = window.__TAURI__.core;
+                        await invoke('save_data', { key, value: '' });
+                    } catch (error) {
+                        console.error('Tauri 删除数据失败:', error);
+                    }
+                }
+            };
+        } else if (this.platform === 'capacitor' && window.Capacitor.isNativePlatform()) {
             // 使用 Capacitor Storage
             return {
                 getItem: async (key) => {
