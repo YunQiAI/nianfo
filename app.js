@@ -55,12 +55,13 @@ class BuddhistChantCounter {
         this.lotusEnabled = true; // 莲花效果开关
         
         this.initializeElements();
-        this.loadCounts();
         this.initializeSpeechRecognition();
         this.initializeAudio();
         this.attachEventListeners();
-        this.updateDisplay();
         this.initializeDefaultMode();
+        
+        // 异步加载计数（loadCounts 内部会调用 updateDisplay）
+        this.loadCounts();
     }
     
     initializeElements() {
@@ -107,11 +108,19 @@ class BuddhistChantCounter {
             buddhaLightStopBtn: document.getElementById('buddhaLightStopBtn'),
             resetBtn4: document.getElementById('resetBtn4')
         };
+        
+        // 初始化时显示加载中状态
+        if (this.elements.amitabhaCount) {
+            this.elements.amitabhaCount.textContent = '加载中...';
+        }
     }
     
     initializeAudio() {
         // 初始化 Web Audio API
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+            this.audioContext = new AudioContextClass();
+        }
         
         // 加载木鱼音效文件
         this.loadWoodenFishAudio();
@@ -263,12 +272,16 @@ class BuddhistChantCounter {
     }
     
     initializeSpeechRecognition() {
-        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-            alert('您的浏览器不支持语音识别功能。请使用最新版本的Chrome、Edge或Safari浏览器。');
+        // 使用平台适配器获取语音识别API
+        const SpeechRecognition = window.platformAdapter ? 
+            window.platformAdapter.getSpeechRecognition() : 
+            (window.SpeechRecognition || window.webkitSpeechRecognition);
+            
+        if (!SpeechRecognition) {
+            alert('您的设备不支持语音识别功能。');
             return;
         }
         
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         this.recognition = new SpeechRecognition();
         
         this.recognition.lang = 'zh-CN';
@@ -1136,12 +1149,20 @@ class BuddhistChantCounter {
         this.elements.amitabhaCount.textContent = this.counts.amitabha;
     }
     
-    saveCounts() {
-        localStorage.setItem('buddhistChantCounts', JSON.stringify(this.counts));
+    async saveCounts() {
+        const storage = window.platformAdapter ? 
+            window.platformAdapter.getStorage() : 
+            { setItem: (k, v) => Promise.resolve(localStorage.setItem(k, v)) };
+        
+        await storage.setItem('buddhistChantCounts', JSON.stringify(this.counts));
     }
     
-    loadCounts() {
-        const saved = localStorage.getItem('buddhistChantCounts');
+    async loadCounts() {
+        const storage = window.platformAdapter ? 
+            window.platformAdapter.getStorage() : 
+            { getItem: (k) => Promise.resolve(localStorage.getItem(k)) };
+        
+        const saved = await storage.getItem('buddhistChantCounts');
         if (saved) {
             try {
                 this.counts = JSON.parse(saved);
@@ -1149,6 +1170,9 @@ class BuddhistChantCounter {
                 console.error('加载保存的计数失败:', error);
             }
         }
+        
+        // 加载完成后立即更新显示
+        this.updateDisplay();
     }
     
     // 佛光普照相关方法
@@ -1333,12 +1357,20 @@ class BuddhistChantCounter {
         }
     }
     
-    saveOfferings() {
-        localStorage.setItem('buddhist_offerings', JSON.stringify(this.offerings));
+    async saveOfferings() {
+        const storage = window.platformAdapter ? 
+            window.platformAdapter.getStorage() : 
+            { setItem: (k, v) => Promise.resolve(localStorage.setItem(k, v)) };
+        
+        await storage.setItem('buddhist_offerings', JSON.stringify(this.offerings));
     }
     
-    loadOfferings() {
-        const saved = localStorage.getItem('buddhist_offerings');
+    async loadOfferings() {
+        const storage = window.platformAdapter ? 
+            window.platformAdapter.getStorage() : 
+            { getItem: (k) => Promise.resolve(localStorage.getItem(k)) };
+        
+        const saved = await storage.getItem('buddhist_offerings');
         if (saved) {
             try {
                 this.offerings = { ...this.offerings, ...JSON.parse(saved) };
@@ -1353,7 +1385,12 @@ class BuddhistChantCounter {
 // 全局变量供HTML调用
 let buddhistCounter;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // 等待平台适配器初始化
+    if (window.platformAdapter) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
     buddhistCounter = new BuddhistChantCounter();
-    buddhistCounter.loadOfferings();
+    await buddhistCounter.loadOfferings();
 });

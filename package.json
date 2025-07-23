@@ -1,0 +1,40 @@
+{
+  "name": "nianfo-web-app",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "cap:init": "cap init",
+    "cap:add:ios": "cap add ios",
+    "cap:sync": "cap sync",
+    "cap:open:ios": "cap open ios",
+    "serve": "python3 -m http.server 8080"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YunQiAI/nianfo-web-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/YunQiAI/nianfo-web-app/issues"
+  },
+  "homepage": "https://github.com/YunQiAI/nianfo-web-app#readme",
+  "description": "",
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.7.1"
+  },
+  "dependencies": {
+    "@capacitor-community/speech-recognition": "^7.0.1",
+    "@capacitor/cli": "^7.4.2",
+    "@capacitor/core": "^7.4.2",
+    "@capacitor/haptics": "^7.0.1",
+    "@capacitor/ios": "^7.4.2",
+    "@capacitor/local-notifications": "^7.0.1",
+    "@capacitor/preferences": "^7.0.1"
+  }
+}

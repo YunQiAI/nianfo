@@ -1,0 +1,12 @@
+{
+  "appId": "com.nianfo.app",
+  "appName": "念佛计数器",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "plugins": {}
+}
