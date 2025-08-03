@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>念佛计数器 - 专注念佛 功德无量</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="offerings.css">
+    <link rel="stylesheet" href="buddha-light.css">
+    <!-- 跨平台适配器 -->
+    <script src="js/platform-adapter.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section" id="headerSection">
+            <h1>念佛计数器</h1>
+            <p class="subtitle">专注念佛 功德无量</p>
+        </div>
+        
+        <div class="focus-toggle">
+            <button id="focusBtn" class="btn btn-focus">专注模式</button>
+        </div>
+        
+        <div class="main-layout">
+            <div class="left-panel" id="leftPanel">
+                <div class="mode-selector">
+                    <button id="keyboardModeBtn" class="btn btn-mode">木鱼模式</button>
+                    <button id="metronomeBtn" class="btn btn-mode active">节拍器</button>
+                    <button id="buddhaLightBtn" class="btn btn-mode">佛光普照</button>
+                </div>
+                
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="status-text">准备就绪</span>
+                </div>
+                
+                
+                <div class="controls" id="keyboardControls" style="display: none;">
+                    <div class="keyboard-mode-selector">
+                        <button id="charModeBtn" class="btn btn-sub-mode active">按字敲击</button>
+                        <button id="chantModeBtn" class="btn btn-sub-mode">按佛号敲击</button>
+                    </div>
+                    <div class="keyboard-hint" id="keyboardHint">按任意键敲击木鱼</div>
+                    <div class="keyboard-progress" id="keyboardProgress" style="display: none;">
+                        <div class="progress-text">进度: <span id="progressText">0/4</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+                    <button id="resetBtn2" class="btn btn-danger">重置计数</button>
+                </div>
+                
+                <div class="controls" id="metronomeControls">
+                    <div class="metronome-hint">节拍器自动念佛</div>
+                    <div class="tempo-control">
+                        <label for="tempoSlider">速度 (BPM): <span id="tempoValue">240</span></label>
+                        <input type="range" id="tempoSlider" min="30" max="480" value="240" class="tempo-slider">
+                    </div>
+                    <div class="metronome-actions">
+                        <button id="metronomeStartBtn" class="btn btn-primary">念佛</button>
+                        <button id="metronomeStopBtn" class="btn btn-secondary" disabled>停止</button>
+                    </div>
+                    <button id="resetBtn3" class="btn btn-danger">重置计数</button>
+                </div>
+                
+                <div class="controls" id="buddhaLightControls" style="display: none;">
+                    <div class="buddha-light-hint">佛光普照禅修模式</div>
+                    <div class="light-tempo-control">
+                        <label for="lightTempoSlider">放光频率 (次/分): <span id="lightTempoValue">30</span></label>
+                        <input type="range" id="lightTempoSlider" min="10" max="120" value="30" class="tempo-slider">
+                    </div>
+                    <div class="light-intensity-control">
+                        <label for="lightIntensitySlider">光芒强度: <span id="lightIntensityValue">80</span>%</label>
+                        <input type="range" id="lightIntensitySlider" min="30" max="100" value="80" class="tempo-slider">
+                    </div>
+                    <div class="lotus-control">
+                        <label>
+                            <input type="checkbox" id="lotusToggle" checked> 莲花绽放效果
+                        </label>
+                    </div>
+                    <div class="buddha-light-actions">
+                        <button id="buddhaLightStartBtn" class="btn btn-primary">开始普照</button>
+                        <button id="buddhaLightStopBtn" class="btn btn-secondary" disabled>停止</button>
+                    </div>
+                    <button id="resetBtn4" class="btn btn-danger">重置计数</button>
+                </div>
+                
+                <div class="count-display">
+                    <div class="count-label">阿弥陀佛</div>
+                    <div class="count-number" id="amitabhaCount">0</div>
+                </div>
+            </div>
+            
+            <div class="center-panel">
+                <div class="buddha-image-container">
+                    <img src="amituofo.jpg" alt="阿弥陀佛" class="buddha-image">
+                </div>
+                <div class="combo-container" id="comboContainer"></div>
+                <div class="offerings-altar" id="offeringsAltar">
+                    <div class="altar-platform">
+                        <div class="offerings-display" id="offeringsDisplay"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="right-panel" id="rightPanel">
+                <div class="offerings-section">
+                    <h3 class="offerings-title">供奉贡品</h3>
+                    <div class="offerings-grid">
+                        <div class="offering-item" data-type="water" onclick="buddhistCounter.addOffering('water')" style="cursor: pointer;">
+                            <div class="offering-icon">💧</div>
+                            <div class="offering-name">供水</div>
+                        </div>
+                        <div class="offering-item" data-type="flower" onclick="buddhistCounter.addOffering('flower')" style="cursor: pointer;">
+                            <div class="offering-icon">🌸</div>
+                            <div class="offering-name">供花</div>
+                        </div>
+                        <div class="offering-item" data-type="lamp" onclick="buddhistCounter.addOffering('lamp')" style="cursor: pointer;">
+                            <div class="offering-icon">🕯️</div>
+                            <div class="offering-name">供灯</div>
+                        </div>
+                        <div class="offering-item" data-type="incense" onclick="buddhistCounter.addOffering('incense')" style="cursor: pointer;">
+                            <div class="offering-icon">🕉️</div>
+                            <div class="offering-name">供香</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="recognition-info" id="recognitionInfo"></div>
+                <div class="last-recognized" id="amitabhaLast"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="wooden-fish-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
