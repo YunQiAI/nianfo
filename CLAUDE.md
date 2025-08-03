@@ -4,48 +4,51 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a web-based Buddhist chant counter application (念佛计数器) that uses speech recognition to automatically count chants like "阿弥陀佛". The application runs entirely in the browser and uses the Web Speech API for real-time speech recognition.
+This is a web-based Buddhist chant counter application (念佛计数器) that helps users count their Buddhist chants with multiple modes: keyboard/wooden fish mode, metronome mode, and Buddha light meditation mode.
 
 ## Development Commands
 
 Since this is a static web application, no build process is required. To develop:
 
 1. **Serve locally**: Use any static server (e.g., `python -m http.server 8000` or `npx serve .`)
-2. **Test in browser**: Open `index.html` in a modern browser with speech recognition support (Chrome, Edge, Safari)
+2. **Test in browser**: Open `index.html` in a modern browser (Chrome, Edge, Safari, Firefox)
 
 ## Architecture
 
 ### Core Components
 
-- **BuddhistChantCounter Class** (`app.js`): Main application logic handling speech recognition and counting
-- **Speech Recognition Engine**: Uses Web Speech API (`webkitSpeechRecognition` or `SpeechRecognition`)
-- **Pattern Matching**: Regex patterns to identify Buddhist chants in Chinese speech
+- **BuddhistChantCounter Class** (`app.js`): Main application logic handling counting and various modes
+- **Keyboard/Wooden Fish Mode**: Manual counting with keyboard input and wooden fish sound effects
+- **Metronome Mode**: Automatic counting at a set tempo
+- **Buddha Light Mode**: Meditation mode with visual effects
 - **Local Storage**: Persists counts across browser sessions
 
 ### Key Features
 
-1. **Speech Recognition**: Continuous listening with interim and final results processing
-2. **Duplicate Prevention**: Cooldown period and processed text tracking to avoid double-counting
-3. **Pattern Recognition**: Supports multiple Buddhist chant patterns (阿弥陀佛, 南无阿弥陀佛, etc.)
-4. **Real-time Updates**: Live transcript and count updates with visual feedback
-5. **Persistence**: Automatic save/load of counts using localStorage
+1. **Multiple Modes**: Three distinct modes for different practice preferences
+2. **Wooden Fish Sound**: Authentic wooden fish sound effect for immersive experience
+3. **Visual Effects**: Buddha light effects, lotus flower growth, and combo animations
+4. **Focus Mode**: Distraction-free practice with automatic rhythm detection
+5. **Offerings System**: Virtual offerings of water, flowers, and lamps
+6. **Persistence**: Automatic save/load of counts using localStorage
 
 ### Application Flow
 
-1. User clicks "开始识别" to start speech recognition
-2. Speech input is processed through `processContinuousText()` and `processInterimText()`
-3. Text is matched against chant patterns using regex
-4. Counts are incremented with cooldown protection
-5. UI updates with animations and transcript logging
-6. Counts are persisted to localStorage
+1. User selects a mode (Keyboard, Metronome, or Buddha Light)
+2. In Keyboard mode: User presses keys to simulate wooden fish hits
+3. In Metronome mode: Automatic counting at set BPM
+4. In Buddha Light mode: Meditation with visual effects
+5. Counts are incremented based on mode rules (e.g., 4 hits = 1 chant)
+6. UI updates with animations and visual feedback
+7. Counts and offerings are persisted to localStorage
 
 ## Code Patterns
 
-### Speech Recognition Handling
-- Continuous recognition with automatic restart
-- Separate processing for interim and final results
-- Error handling for various speech recognition states
-- Cooldown mechanism to prevent duplicate counting
+### Mode Handling
+- Mode switching with proper cleanup of previous mode
+- Keyboard mode with rhythm recording and auto-play in focus mode
+- Metronome with adjustable BPM (30-480)
+- Buddha Light with adjustable frequency and intensity
 
 ### UI Updates
 - Animated count changes with CSS transforms
@@ -61,10 +64,9 @@ Since this is a static web application, no build process is required. To develop
 
 ## Browser Requirements
 
-- Modern browser with Web Speech API support
-- Chinese language support for speech recognition
-- Microphone access permissions required
-- Recommended: Chrome, Edge, or Safari for best compatibility
+- Modern browser with Web Audio API support
+- JavaScript enabled
+- Recommended: Chrome, Edge, Safari, or Firefox for best compatibility
 
 ## File Structure
 

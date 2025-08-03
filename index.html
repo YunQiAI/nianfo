@@ -14,7 +14,7 @@
     <div class="container">
         <div class="header-section" id="headerSection">
             <h1>念佛计数器</h1>
-            <p class="subtitle">语音识别自动计数</p>
+            <p class="subtitle">专注念佛 功德无量</p>
         </div>
         
         <div class="focus-toggle">
@@ -24,7 +24,6 @@
         <div class="main-layout">
             <div class="left-panel" id="leftPanel">
                 <div class="mode-selector">
-                    <button id="speechModeBtn" class="btn btn-mode">语音识别</button>
                     <button id="keyboardModeBtn" class="btn btn-mode">木鱼模式</button>
                     <button id="metronomeBtn" class="btn btn-mode active">节拍器</button>
                     <button id="buddhaLightBtn" class="btn btn-mode">佛光普照</button>
@@ -34,11 +33,6 @@
                     <span class="status-text">准备就绪</span>
                 </div>
                 
-                <div class="controls" id="speechControls" style="display: none;">
-                    <button id="startBtn" class="btn btn-primary">念佛</button>
-                    <button id="stopBtn" class="btn btn-secondary" disabled>停止识别</button>
-                    <button id="resetBtn" class="btn btn-danger">重置计数</button>
-                </div>
                 
                 <div class="controls" id="keyboardControls" style="display: none;">
                     <div class="keyboard-mode-selector">
@@ -112,20 +106,21 @@
                 <div class="offerings-section">
                     <h3 class="offerings-title">供奉贡品</h3>
                     <div class="offerings-grid">
-                        <div class="offering-item" data-type="water">
+                        <div class="offering-item" data-type="water" onclick="buddhistCounter.addOffering('water')" style="cursor: pointer;">
                             <div class="offering-icon">💧</div>
                             <div class="offering-name">供水</div>
-                            <button class="btn-offering" onclick="buddhistCounter.addOffering('water')">上贡</button>
                         </div>
-                        <div class="offering-item" data-type="flower">
+                        <div class="offering-item" data-type="flower" onclick="buddhistCounter.addOffering('flower')" style="cursor: pointer;">
                             <div class="offering-icon">🌸</div>
                             <div class="offering-name">供花</div>
-                            <button class="btn-offering" onclick="buddhistCounter.addOffering('flower')">上贡</button>
                         </div>
-                        <div class="offering-item" data-type="lamp">
+                        <div class="offering-item" data-type="lamp" onclick="buddhistCounter.addOffering('lamp')" style="cursor: pointer;">
                             <div class="offering-icon">🕯️</div>
                             <div class="offering-name">供灯</div>
-                            <button class="btn-offering" onclick="buddhistCounter.addOffering('lamp')">上贡</button>
+                        </div>
+                        <div class="offering-item" data-type="incense" onclick="buddhistCounter.addOffering('incense')" style="cursor: pointer;">
+                            <div class="offering-icon">🕉️</div>
+                            <div class="offering-name">供香</div>
                         </div>
                     </div>
                 </div>
