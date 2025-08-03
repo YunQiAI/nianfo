@@ -4,6 +4,10 @@
     box-sizing: border-box;
 }
 
+html, body {
+    overflow-x: hidden;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: #f5f5f5;
@@ -348,21 +352,22 @@ h1 {
     }
     70% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(8);
+        transform: translate(-50%, -50%) scale(3);
     }
     100% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(15);
+        transform: translate(-50%, -50%) scale(4);
     }
 }
 
 .buddha-image-container {
     position: relative;
+    overflow: hidden;
 }
 
 .focus-mode .buddha-light {
-    width: 400px;
-    height: 400px;
+    width: 300px;
+    height: 300px;
 }
 
 .combo-container {
