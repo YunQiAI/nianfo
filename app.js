@@ -21,13 +21,10 @@ class BuddhistChantCounter {
         this.lotusScale = 1; // 莲花当前缩放比例
         this.lotusCounter = null; // 莲花计数器
         
-        // 音效和节奏记录
-        this.audioContext = null;
+        // 节奏记录
         this.rhythmRecord = []; // 记录敲击时间戳
         this.autoPlayInterval = null; // 自动播放定时器
         this.averageInterval = 1000; // 默认间隔（毫秒）
-        this.woodenFishAudio = null; // 木鱼音效文件
-        this.audioBuffer = null; // 音频缓冲区
         
         // 节拍器相关
         this.metronomeInterval = null; // 节拍器定时器
@@ -50,7 +47,6 @@ class BuddhistChantCounter {
         this.lotusEnabled = true; // 莲花效果开关
         
         this.initializeElements();
-        this.initializeAudio();
         this.attachEventListeners();
         this.initializeDefaultMode();
         
@@ -104,161 +100,15 @@ class BuddhistChantCounter {
         }
     }
     
-    initializeAudio() {
-        // 初始化 Web Audio API
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioContextClass) {
-            this.audioContext = new AudioContextClass();
-        }
-        
-        // 加载木鱼音效文件
-        this.loadWoodenFishAudio();
-    }
     
-    async loadWoodenFishAudio() {
-        try {
-            // 尝试加载真实木鱼音效文件
-            const response = await fetch('wooden-fish.m4a');
-            if (response.ok) {
-                const arrayBuffer = await response.arrayBuffer();
-                if (arrayBuffer.byteLength > 0) {
-                    this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-                    console.log('✅ 木鱼音效文件加载成功');
-                    return;
-                }
-            }
-            console.error('❌ 木鱼音效文件加载失败');
-        } catch (error) {
-            console.error('❌ 木鱼音效文件加载失败:', error);
-        }
-        
-        // 如果加载失败，使用内置音效数据
-        console.warn('尝试使用内置木鱼音效...');
-        if (typeof WOODEN_FISH_AUDIO_DATA !== 'undefined') {
-            this.audioBuffer = WOODEN_FISH_AUDIO_DATA.generateAudioBuffer(this.audioContext);
-            console.log('✅ 内置木鱼音效加载成功');
-        } else {
-            console.error('❌ 内置音效数据不可用');
-        }
-    }
     
-    generateBuiltinAudioBuffer() {
-        try {
-            const sampleRate = this.audioContext.sampleRate;
-            const duration = 0.43; // 基于真实音频的单次敲击时长
-            const length = sampleRate * duration;
-            
-            // 创建立体声音频缓冲区
-            const audioBuffer = this.audioContext.createBuffer(2, length, sampleRate);
-            const leftChannel = audioBuffer.getChannelData(0);
-            const rightChannel = audioBuffer.getChannelData(1);
-            
-            // 基于真实木鱼音效的频谱分析，生成仿真音效
-            for (let i = 0; i < length; i++) {
-                const t = i / sampleRate;
-                
-                // 主要共鸣频率 - 基于木鱼的声学特征
-                let sample = 0;
-                
-                // 基频 - 木鱼的主要音调
-                sample += 0.6 * Math.sin(2 * Math.PI * 450 * t);
-                
-                // 重要谐波 - 模拟木质空腔共鸣
-                sample += 0.4 * Math.sin(2 * Math.PI * 900 * t);
-                sample += 0.25 * Math.sin(2 * Math.PI * 1350 * t);
-                sample += 0.15 * Math.sin(2 * Math.PI * 1800 * t);
-                sample += 0.1 * Math.sin(2 * Math.PI * 2700 * t);
-                
-                // 添加低频成分增加厚度
-                sample += 0.2 * Math.sin(2 * Math.PI * 225 * t);
-                
-                // 敲击瞬间的高频噪声（模拟木棒与木鱼接触）
-                if (t < 0.005) {
-                    sample += 0.3 * (Math.random() * 2 - 1) * Math.exp(-t * 1000);
-                }
-                
-                // 木质共鸣的轻微随机成分
-                sample += 0.02 * (Math.random() * 2 - 1) * Math.exp(-t * 12);
-                
-                // 精确的包络设计 - 模拟真实木鱼的动态
-                let envelope;
-                if (t < 0.002) {
-                    // 极快攻击 - 敲击瞬间
-                    envelope = t / 0.002;
-                } else if (t < 0.02) {
-                    // 快速初期衰减
-                    envelope = 1.0 * Math.exp(-(t - 0.002) * 25);
-                } else {
-                    // 长尾共鸣衰减
-                    envelope = 0.6 * Math.exp(-(t - 0.02) * 6);
-                }
-                
-                // 最终音频处理
-                const finalSample = sample * envelope * 0.15;
-                
-                // 立体声处理 - 轻微的立体声展宽
-                leftChannel[i] = finalSample * (1 + 0.05 * Math.sin(2 * Math.PI * 3 * t));
-                rightChannel[i] = finalSample * (1 - 0.05 * Math.sin(2 * Math.PI * 3 * t));
-            }
-            
-            this.audioBuffer = audioBuffer;
-            console.log('使用高仿真木鱼音效 - 基于真实音频特征合成');
-        } catch (error) {
-            console.log('内置音效生成失败:', error);
-        }
-    }
     
     playWoodenFishSound() {
-        if (!this.audioContext) return;
-        
-        // 优先使用加载的音频文件
-        if (this.audioBuffer) {
-            this.playAudioBuffer();
-        } else {
-            // 如果音频文件加载失败，使用合成音效
-            console.warn('音效文件未加载，使用合成音效');
-            this.playSynthesizedSound();
-        }
+        // 音效已禁用，只保留视觉反馈
+        console.log('木鱼敲击');
     }
     
-    playSynthesizedSound() {
-        // 后备的合成音效
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
-        
-        oscillator.frequency.setValueAtTime(520, this.audioContext.currentTime);
-        oscillator.type = 'triangle';
-        
-        gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
-        
-        oscillator.start(this.audioContext.currentTime);
-        oscillator.stop(this.audioContext.currentTime + 0.2);
-    }
     
-    playAudioBuffer() {
-        try {
-            const source = this.audioContext.createBufferSource();
-            const gainNode = this.audioContext.createGain();
-            
-            source.buffer = this.audioBuffer;
-            gainNode.gain.setValueAtTime(0.8, this.audioContext.currentTime);
-            
-            source.connect(gainNode);
-            gainNode.connect(this.audioContext.destination);
-            
-            // 播放单次木鱼音效（约前0.4秒）
-            const duration = 0.4; // 单次敲击的时长
-            source.start(this.audioContext.currentTime, 0, duration);
-            
-            console.log('播放木鱼音效，时长:', duration, '秒');
-        } catch (error) {
-            console.error('播放音效失败:', error);
-        }
-    }
     
     
     
