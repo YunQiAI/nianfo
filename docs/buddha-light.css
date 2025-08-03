@@ -1,0 +1,76 @@
+/* 佛光普照模式样式 */
+.buddha-light-hint {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #FFD700;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #FFF8DC 0%, #F0E68C 100%);
+    border-radius: 8px;
+    border: 2px solid #FFD700;
+    font-weight: 600;
+}
+
+.light-tempo-control,
+.light-intensity-control {
+    margin-bottom: 20px;
+}
+
+.light-tempo-control label,
+.light-intensity-control label {
+    display: block;
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.lotus-control {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.lotus-control label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #8B4513;
+    cursor: pointer;
+}
+
+.lotus-control input[type="checkbox"] {
+    margin-right: 8px;
+    transform: scale(1.2);
+}
+
+.buddha-light-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* 佛光普照模式专注状态特殊处理 */
+body.buddha-light-focus .count-display {
+    display: none;
+}
+
+body.buddha-light-focus .lotus-counter {
+    display: none;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .buddha-light-hint {
+        font-size: 1rem;
+        padding: 12px;
+    }
+    
+    .buddha-light-actions {
+        flex-direction: column;
+    }
+    
+    .lotus-control label {
+        font-size: 0.9rem;
+    }
+}

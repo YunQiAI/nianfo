@@ -1,0 +1,578 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.main-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.left-panel {
+    flex: 1;
+    max-width: 300px;
+}
+
+.center-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.right-panel {
+    flex: 1;
+    max-width: 300px;
+    text-align: right;
+}
+
+h1 {
+    text-align: center;
+    color: #8B4513;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+
+.buddha-image-container {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.buddha-image {
+    width: min(70vw, 600px);
+    height: min(70vh, 600px);
+    max-width: 600px;
+    max-height: 600px;
+    object-fit: cover;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.buddha-image:hover {
+    transform: scale(1.05);
+}
+
+.count-display {
+    background-color: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin-top: 20px;
+}
+
+.count-label {
+    font-size: 1.2rem;
+    color: #8B4513;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.count-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #2196F3;
+    transition: all 0.3s ease;
+}
+
+.mode-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn-mode {
+    flex: 1;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    background-color: #f5f5f5;
+    color: #666;
+    border: 2px solid #ddd;
+}
+
+.btn-mode.active {
+    background-color: #2196F3;
+    color: white;
+    border-color: #2196F3;
+}
+
+.btn-mode:hover {
+    background-color: #1976D2;
+    color: white;
+    border-color: #1976D2;
+}
+
+.keyboard-hint {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #8B4513;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #fff8dc;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+}
+
+.metronome-hint {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #2196F3;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #e3f2fd;
+    border-radius: 8px;
+    border: 2px solid #2196F3;
+}
+
+.tempo-control {
+    margin-bottom: 20px;
+}
+
+.tempo-control label {
+    display: block;
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.tempo-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    background: #ddd;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.tempo-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2196F3;
+    cursor: pointer;
+}
+
+.tempo-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2196F3;
+    cursor: pointer;
+    border: none;
+}
+
+.metronome-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+
+.keyboard-mode-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.btn-sub-mode {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    background-color: #f0f0f0;
+    color: #666;
+    border: 1px solid #ccc;
+}
+
+.btn-sub-mode.active {
+    background-color: #8B4513;
+    color: white;
+    border-color: #8B4513;
+}
+
+.btn-sub-mode:hover {
+    background-color: #A0522D;
+    color: white;
+    border-color: #A0522D;
+}
+
+.keyboard-progress {
+    margin-bottom: 15px;
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    color: #8B4513;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #8B4513;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.focus-toggle {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.btn-focus {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #FF6B35;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-focus:hover {
+    background-color: #E55A2B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+}
+
+.focus-mode {
+    background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+}
+
+.focus-mode .header-section,
+.focus-mode .left-panel,
+.focus-mode .right-panel,
+.focus-mode .focus-toggle {
+    display: none;
+}
+
+.focus-mode .main-layout {
+    justify-content: center;
+}
+
+.focus-mode .center-panel {
+    max-width: none;
+    width: 100%;
+}
+
+.focus-mode .buddha-image {
+    width: min(90vw, 1875px);
+    height: min(90vh, 1325px);
+    max-width: 1875px;
+    max-height: 1325px;
+}
+
+.exit-focus {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    z-index: 1000;
+}
+
+.exit-focus:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.buddha-light {
+    position: absolute;
+    top: 15.5%;
+    left: 50.5%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle,
+        transparent 0%,
+        transparent 30%,
+        rgba(255, 215, 0, 0.2) 40%,
+        rgba(255, 215, 0, 0.4) 60%,
+        rgba(255, 215, 0, 0.6) 80%,
+        rgba(255, 215, 0, 0.8) 100%);
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    animation: buddhaLightPulse 3s ease-out;
+    z-index: 5;
+}
+
+@keyframes buddhaLightPulse {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.3);
+    }
+    30% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    70% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(8);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(15);
+    }
+}
+
+.buddha-image-container {
+    position: relative;
+}
+
+.focus-mode .buddha-light {
+    width: 400px;
+    height: 400px;
+}
+
+.combo-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.combo-effect {
+    position: absolute;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    animation: comboFlyToLotus 4s ease-in-out forwards;
+}
+
+@keyframes comboFlyToLotus {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 300px) scale(0.8);
+    }
+    10% {
+        opacity: 1;
+        transform: translate(-50%, 250px) scale(0.9);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, 0px) scale(1);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -150px) scale(1.1);
+    }
+    90% {
+        opacity: 0.5;
+        transform: translate(-50%, -180px) scale(0.8);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -180px) scale(0.5);
+    }
+}
+
+.lotus-flower {
+    position: absolute;
+    opacity: 0.9;
+    transform: translate(-50%, -180px) scale(1);
+    z-index: 15;
+    transition: all 0.5s ease-out;
+    width: 80px;
+    height: 80px;
+}
+
+.lotus-flower svg {
+    width: 100%;
+    height: 100%;
+}
+
+.lotus-counter {
+    position: absolute;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    opacity: 0.9;
+    z-index: 16;
+    transition: all 0.3s ease-out;
+}
+
+
+.status-indicator {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.status-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.status-indicator.active {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.status-indicator.active .status-text::before {
+    content: "🎤 ";
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 40px;
+}
+
+.btn {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background-color: #2196F3;
+    color: white;
+    padding: 16px 40px;
+    font-size: 1.3rem;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #1976D2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+}
+
+.btn-secondary {
+    background-color: #757575;
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: #616161;
+}
+
+.btn-danger {
+    background-color: #f44336;
+    color: white;
+    padding: 8px 20px;
+    font-size: 0.9rem;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background-color: #d32f2f;
+}
+
+.last-recognized {
+    font-size: 0.9rem;
+    color: #666;
+    min-height: 20px;
+    margin-bottom: 10px;
+}
+
+.recognition-info {
+    font-size: 0.85rem;
+    color: #2196F3;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    .main-layout {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .left-panel, .right-panel {
+        max-width: 100%;
+        width: 100%;
+        text-align: center;
+    }
+
+    .controls {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+
+    .buddha-image {
+        width: min(80vw, 400px);
+        height: min(60vh, 400px);
+        max-width: 400px;
+        max-height: 400px;
+    }
+
+    .combo-effect {
+        font-size: 1.5rem;
+    }
+}
