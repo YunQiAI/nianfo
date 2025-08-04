@@ -25,12 +25,14 @@
     text-align: center;
 }
 
-.lotus-control {
+.lotus-control,
+.fullscreen-light-control {
     margin-bottom: 20px;
     text-align: center;
 }
 
-.lotus-control label {
+.lotus-control label,
+.fullscreen-light-control label {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -39,7 +41,8 @@
     cursor: pointer;
 }
 
-.lotus-control input[type="checkbox"] {
+.lotus-control input[type="checkbox"],
+.fullscreen-light-control input[type="checkbox"] {
     margin-right: 8px;
     transform: scale(1.2);
 }

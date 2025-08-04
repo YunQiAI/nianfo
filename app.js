@@ -45,6 +45,7 @@ class BuddhistChantCounter {
         this.lightTempo = 30; // 放光频率（次/分）
         this.lightIntensity = 80; // 光芒强度（百分比）
         this.lotusEnabled = true; // 莲花效果开关
+        this.fullscreenBuddhaLight = false; // 全屏佛光模式
         
         this.initializeElements();
         this.attachEventListeners();
@@ -89,6 +90,7 @@ class BuddhistChantCounter {
             lightIntensitySlider: document.getElementById('lightIntensitySlider'),
             lightIntensityValue: document.getElementById('lightIntensityValue'),
             lotusToggle: document.getElementById('lotusToggle'),
+            fullscreenLightToggle: document.getElementById('fullscreenLightToggle'),
             buddhaLightStartBtn: document.getElementById('buddhaLightStartBtn'),
             buddhaLightStopBtn: document.getElementById('buddhaLightStopBtn'),
             resetBtn4: document.getElementById('resetBtn4')
@@ -417,11 +419,17 @@ class BuddhistChantCounter {
     }
     
     showBuddhaLight() {
-        const buddhaContainer = document.querySelector('.buddha-image-container');
         const lightElement = document.createElement('div');
-        lightElement.className = 'buddha-light';
         
-        buddhaContainer.appendChild(lightElement);
+        // 检查是否是佛光普照模式且启用了全屏效果
+        if (this.currentMode === 'buddhaLight' && this.fullscreenBuddhaLight) {
+            lightElement.className = 'buddha-light fullscreen';
+            document.body.appendChild(lightElement);
+        } else {
+            lightElement.className = 'buddha-light';
+            const buddhaContainer = document.querySelector('.buddha-image-container');
+            buddhaContainer.appendChild(lightElement);
+        }
         
         // 动画完成后移除元素
         setTimeout(() => {
@@ -676,6 +684,7 @@ class BuddhistChantCounter {
         this.elements.lightTempoSlider.addEventListener('input', (e) => this.updateLightTempo(parseInt(e.target.value)));
         this.elements.lightIntensitySlider.addEventListener('input', (e) => this.updateLightIntensity(parseInt(e.target.value)));
         this.elements.lotusToggle.addEventListener('change', (e) => this.toggleLotusEffect(e.target.checked));
+        this.elements.fullscreenLightToggle.addEventListener('change', (e) => this.toggleFullscreenLight(e.target.checked));
         
         // 专注模式
         this.elements.focusBtn.addEventListener('click', () => this.toggleFocusMode());
@@ -829,6 +838,11 @@ class BuddhistChantCounter {
     toggleLotusEffect(enabled) {
         this.lotusEnabled = enabled;
         // 简单的开关，在定时器中检查此状态
+    }
+    
+    toggleFullscreenLight(enabled) {
+        this.fullscreenBuddhaLight = enabled;
+        console.log('全屏佛光效果', enabled ? '已启用' : '已禁用');
     }
     
     // 佛光普照专用莲花效果（不显示计数）
